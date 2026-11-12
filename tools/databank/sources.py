@@ -15,6 +15,7 @@ from . import common as C
 from . import config as K
 
 REGISTRY = []
+SLOW_LAST = {"gdelt"}  # throttled feeds run after everything else
 
 
 def source(name, modes=("nightly", "backfill")):
@@ -468,15 +469,21 @@ def _gdelt_date(sd):
 GDELT_GAP = 8.0  # GDELT asks for one request per 5s; shared CI IPs need more room
 
 
-def _gdelt_json(url):
-    """GDELT throttles hard. Wait it out (30s, then 90s) instead of losing the theme."""
-    for wait in (30, 90, None):
+class GdeltBlocked(C.FetchError):
+    pass
+
+
+def _gdelt_json(url, waits=(30, 90)):
+    """GDELT throttles hard. Wait it out instead of losing the theme."""
+    for wait in tuple(waits) + (None,):
         try:
             raw = C.fetch(url, retries=1)
         except C.FetchError as e:
-            if "429" in str(e) and wait:
-                C.pause(wait)
-                continue
+            if "429" in str(e):
+                if wait:
+                    C.pause(wait)
+                    continue
+                raise GdeltBlocked(str(e))
             raise
         txt = raw.decode("utf-8", "replace").strip()
         if not txt.startswith("{"):
@@ -487,15 +494,29 @@ def _gdelt_json(url):
         return json.loads(txt, strict=False)
 
 
+GDELT_MAX_BLOCKS = 2  # after this many fully-backed-off 429s, GDELT is refusing this runner tonight
+
+
 @source("gdelt")
 def gdelt(ctx, t):
     span = "3months" if ctx.mode == "backfill" else "3d"
-    fails, daily = [], {}
+    waits = (30, 90) if ctx.mode == "backfill" else (30,)
+    fails, daily, blocked = [], {}, [0]
+
+    def get(url):
+        if blocked[0] >= GDELT_MAX_BLOCKS:
+            raise C.FetchError("skipped — GDELT is throttling this runner")
+        try:
+            return _gdelt_json(url, waits)
+        except GdeltBlocked:
+            blocked[0] += 1
+            raise
+
     for theme, q in K.GDELT_THEMES.items():
         qq = urllib.parse.quote(q + " sourcelang:eng")
         for mode, col in (("timelinetone", "tone"), ("timelinevol", "volume_pct")):
             try:
-                j = _gdelt_json(GD.format(q=qq, m=mode, s=span))
+                j = get(GD.format(q=qq, m=mode, s=span))
                 pts = 0
                 for series in j.get("timeline") or []:
                     for p in series.get("data") or []:
@@ -507,7 +528,8 @@ def gdelt(ctx, t):
                     fails.append(f"{theme}/{mode}: empty timeline {json.dumps(j)[:120]}")
             except C.FetchError as e:
                 fails.append(f"{theme}/{mode}: {e}")
-            C.pause(GDELT_GAP)
+            if blocked[0] < GDELT_MAX_BLOCKS:
+                C.pause(GDELT_GAP)
     rows = [{"date": d, "theme": th, **{c: round(sum(v) / len(v), 5) for c, v in cols.items()}}
             for (d, th), cols in daily.items() if d < ctx.iso()]  # only completed days
     t.add(C.upsert_csv(ctx.table("news", "gdelt_daily.csv"), rows, key=("date", "theme")))
@@ -517,7 +539,7 @@ def gdelt(ctx, t):
         for theme, q in K.GDELT_THEMES.items():
             qq = urllib.parse.quote(q + " sourcelang:eng")
             try:
-                j = _gdelt_json(GD.format(q=qq, m="artlist", s="1d") + "&maxrecords=100&sort=datedesc")
+                j = get(GD.format(q=qq, m="artlist", s="1d") + "&maxrecords=100&sort=datedesc")
                 arts = j.get("articles") or []
                 ctx.save_raw(f"gdelt_{theme}.json", j)
                 counts.append({"date": ctx.iso(), "source": "gdelt", "topic": theme, "items": len(arts)})
@@ -527,8 +549,11 @@ def gdelt(ctx, t):
                                  "country": a.get("sourcecountry"), "seen": a.get("seendate")})
             except C.FetchError as e:
                 fails.append(f"{theme}/artlist: {e}")
-            C.pause(GDELT_GAP)
+            if blocked[0] < GDELT_MAX_BLOCKS:
+                C.pause(GDELT_GAP)
         _store_news(ctx, t, recs, counts)
+    if blocked[0] >= GDELT_MAX_BLOCKS:
+        t.notes.insert(0, "GDELT refused this runner (HTTP 429) — stopped early so other feeds keep their time")
     _partial(t, fails, len(K.GDELT_THEMES) * (3 if ctx.mode == "nightly" else 2))
 
 

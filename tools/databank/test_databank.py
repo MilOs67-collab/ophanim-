@@ -413,6 +413,30 @@ class TestMarketsAndGdelt(Base):
         self.assertIn("empty timeline", " ".join(r["notes"]))
 
 
+class TestGdeltCircuitBreaker(Base):
+    def test_blocked_runner_stops_fast_and_runs_last(self):
+        base, waits, gd = Fake(), [], {"n": 0}
+
+        def blocked(url, **kw):
+            if "gdeltproject" in url:
+                gd["n"] += 1
+                raise C.FetchError(f"{url} -> HTTP 429")
+            return base(url, **kw)
+        C.fetch_impl = blocked
+        C.sleep_impl = waits.append
+        rep = R.run("nightly", self.bank, None, today=TODAY, env=self.env)
+        names = [r["source"] for r in rep["sources"]]
+        self.assertEqual(names[-1], "gdelt")
+        g = rep["sources"][-1]
+        self.assertFalse(g["ok"])
+        self.assertIn("refused this runner", g["notes"][0])
+        # nightly: 2 blocked requests x 2 attempts each (one 30s wait) — then stop
+        self.assertEqual(gd["n"], 4)
+        self.assertEqual(sum(1 for w in waits if w == 30), 2)
+        self.assertNotIn(90, waits)
+        self.assertTrue(all(r["ok"] for r in rep["sources"] if r["source"] in ("fred", "air", "space")))
+
+
 class TestShips(Base):
     def test_chokepoint_counts(self):
         latest = {1: (26.5, 56.3, 12.0, 0, "TANKER A"),   # Hormuz, moving
