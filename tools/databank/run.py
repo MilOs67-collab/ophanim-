@@ -16,7 +16,8 @@ from . import sources as S
 def run(mode, bank, raw=None, only=None, today=None, env=None):
     ctx = C.Context(bank, raw, mode, today=today, env=env)
     started = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    for name, modes, fn in S.REGISTRY:
+    order = sorted(S.REGISTRY, key=lambda r: r[0] in S.SLOW_LAST)  # stable: slow feeds go last
+    for name, modes, fn in order:
         if mode not in modes or (only and name not in only):
             continue
         t = S.Tally()

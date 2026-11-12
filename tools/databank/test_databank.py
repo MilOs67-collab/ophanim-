@@ -11,6 +11,7 @@ import shutil
 import tempfile
 import time
 import unittest
+import urllib.parse
 
 from tools.databank import common as C
 from tools.databank import config as K
@@ -117,6 +118,19 @@ class Fake:
                        "size": 1.5e6, "weight": 4e6, "extras": {"totalFees": 1e7, "medianFee": 3,
                                                                  "reward": 3.2e8, "pool": {"name": "Foundry"}}}
                       for i in range(15)])
+        if "query1.finance.yahoo.com" in url:
+            sym = urllib.parse.unquote(url.split("/chart/")[1].split("?")[0])
+            if sym in ("SI=F", "^STOXX50E"):
+                raise C.FetchError(f"{url} -> HTTP 404")
+            first = dt.date(1927, 12, 30) if "period1" in url else td - dt.timedelta(days=5)
+            days = [first, td - dt.timedelta(days=2), td]
+            return J({"chart": {"result": [{
+                "meta": {"symbol": sym, "gmtoffset": -18000},
+                "timestamp": [ts(d) + 14 * 3600 + 30 * 60 for d in days],
+                "indicators": {"quote": [{"open": [17.6, 6800, 6900], "high": [17.7, 6850, 6950],
+                                          "low": [17.5, 6790, 6880], "close": [17.66, 6840, None],
+                                          "volume": [0, 1, 2]}],
+                               "adjclose": [{"adjclose": [17.66, 6840, None]}]}}], "error": None}})
         if "stooq.com" in url:
             if "silver" in url or "xagusd" in url:
                 return b"No data"
@@ -208,13 +222,15 @@ class TestNightly(Base):
         status = {r["source"]: r for r in rep["sources"]}
         for name in ("fred", "treasury_yields", "treasury_debt", "fx_ecb", "worldbank", "sec_filings",
                      "sec_financials", "crypto_coinbase", "crypto_coingecko", "bitcoin_chain",
-                     "markets_stooq", "gdelt", "social", "space", "air"):
+                     "markets", "gdelt", "social", "space", "air"):
             self.assertTrue(status[name]["ok"], f"{name}: {status[name]['error']}")
         self.assertFalse(status["ships"]["ok"])
         self.assertIn("AISSTREAM_KEY", status["ships"]["error"])
         self.assertIn("weekly", " ".join(status["worldbank"]["notes"]))
-        # silver returns "No data" → noted, not fatal
-        self.assertTrue(any("SILVER" in n for n in status["markets_stooq"]["notes"]))
+        # silver: Yahoo 404 AND Stooq "No data" → noted, not fatal; Euro Stoxx has no fallback → noted
+        notes = " ".join(status["markets"]["notes"])
+        self.assertIn("SILVER", notes)
+        self.assertIn("EUROSTOXX50", notes)
 
         m = self.manifest()
         paths = {t["path"] for t in m["tables"]}
@@ -223,7 +239,7 @@ class TestNightly(Base):
                      "tables/companies/sec_filings.csv", "tables/companies/sec_financials/jpm.csv",
                      "tables/crypto/coinbase/BTC-USD.csv", "tables/crypto/coingecko_top100_daily.csv",
                      "tables/crypto/btc_blocks.csv", "tables/crypto/btc_daily.csv",
-                     "tables/markets/stooq/SPX.csv", "tables/news/gdelt_daily.csv",
+                     "tables/markets/daily/SPX.csv", "tables/news/gdelt_daily.csv",
                      "tables/news/news_daily_counts.csv", "tables/geo/space_daily.csv",
                      "tables/geo/air_daily.csv", "tables/geo/air_by_country_daily.csv"):
             self.assertIn(must, paths)
@@ -338,8 +354,12 @@ class TestBackfill(Base):
         self.assertEqual(min(r["end"] for r in jpm), "2009-12-31")
         # Bitcoin hashrate back to genesis
         self.assertEqual(self.rows("crypto", "btc_hashrate.csv")[0]["date"], "2009-01-09")
-        # Stooq long index history
-        self.assertEqual(self.rows("markets", "stooq", "SPX.csv")[0]["date"], "1789-05-01")
+        # Yahoo long index history, exchange-local dates, no forming session, adj close kept
+        spx = self.rows("markets", "daily", "SPX.csv")
+        self.assertEqual(spx[0]["date"], "1927-12-30")
+        self.assertEqual(spx[0]["src"], "yahoo")
+        self.assertEqual(spx[0]["adj_close"], "17.66")
+        self.assertTrue(all(r["date"] < TODAY.isoformat() for r in spx))
 
     def test_backfill_then_nightly_extends_same_tables(self):
         self.go("backfill", only={"crypto_coinbase", "fx_ecb"})
@@ -352,6 +372,69 @@ class TestBackfill(Base):
         self.go("backfill", only={"fred", "treasury_yields"})
         rep = self.go("backfill", only={"fred", "treasury_yields"})
         self.assertEqual(sum(r["added"] + r["updated"] for r in rep["sources"]), 0)
+
+
+class TestMarketsAndGdelt(Base):
+    def test_stooq_fallback_when_yahoo_fails(self):
+        f = Fake(broken=("query1.finance.yahoo.com/v8/finance/chart/%5EGSPC",))
+        rep = self.go("nightly", fake=f, only={"markets"})
+        self.assertTrue(rep["sources"][0]["ok"])
+        spx = self.rows("markets", "daily", "SPX.csv")
+        self.assertEqual({r["src"] for r in spx}, {"stooq"})
+        self.assertEqual(self.rows("markets", "daily", "DJI.csv")[0]["src"], "yahoo")
+
+    def test_gdelt_waits_out_429_then_succeeds(self):
+        base, hits, waits = Fake(), {"n": 0}, []
+
+        def flaky(url, **kw):
+            if "gdeltproject" in url and hits["n"] < 2:
+                hits["n"] += 1
+                raise C.FetchError(f"{url} -> HTTP 429")
+            return base(url, **kw)
+        C.fetch_impl = flaky
+        C.sleep_impl = waits.append
+        rep = R.run("backfill", self.bank, None, only={"gdelt"}, today=TODAY, env=self.env)
+        r = rep["sources"][0]
+        self.assertTrue(r["ok"], r["error"])
+        self.assertEqual(r["notes"], [])
+        self.assertIn(30, waits)
+        self.assertIn(90, waits)
+        self.assertEqual({x["theme"] for x in self.rows("news", "gdelt_daily.csv")}, set(K.GDELT_THEMES))
+
+    def test_gdelt_empty_or_text_answers_are_reported_not_silent(self):
+        def empty(url, **kw):
+            if "gdeltproject" in url:
+                return b"{}" if "timelinetone" in url else b"Please limit requests to one every 5 seconds"
+            raise C.FetchError("unrouted")
+        C.fetch_impl = empty
+        rep = R.run("backfill", self.bank, None, only={"gdelt"}, today=TODAY, env=self.env)
+        r = rep["sources"][0]
+        self.assertFalse(r["ok"])  # every request came back useless → loud failure
+        self.assertIn("empty timeline", " ".join(r["notes"]))
+
+
+class TestGdeltCircuitBreaker(Base):
+    def test_blocked_runner_stops_fast_and_runs_last(self):
+        base, waits, gd = Fake(), [], {"n": 0}
+
+        def blocked(url, **kw):
+            if "gdeltproject" in url:
+                gd["n"] += 1
+                raise C.FetchError(f"{url} -> HTTP 429")
+            return base(url, **kw)
+        C.fetch_impl = blocked
+        C.sleep_impl = waits.append
+        rep = R.run("nightly", self.bank, None, today=TODAY, env=self.env)
+        names = [r["source"] for r in rep["sources"]]
+        self.assertEqual(names[-1], "gdelt")
+        g = rep["sources"][-1]
+        self.assertFalse(g["ok"])
+        self.assertIn("refused this runner", g["notes"][0])
+        # nightly: 2 blocked requests x 2 attempts each (one 30s wait) — then stop
+        self.assertEqual(gd["n"], 4)
+        self.assertEqual(sum(1 for w in waits if w == 30), 2)
+        self.assertNotIn(90, waits)
+        self.assertTrue(all(r["ok"] for r in rep["sources"] if r["source"] in ("fred", "air", "space")))
 
 
 class TestShips(Base):

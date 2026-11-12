@@ -3,7 +3,8 @@ date,run,source,ok,added,updated,seconds,error
 2026-11-12,backfill,crypto_coinbase,1,30975,0,61.9,
 2026-11-12,backfill,fred,1,200728,0,21.8,
 2026-11-12,backfill,fx_ecb,1,7134,0,37.5,
-2026-11-12,backfill,gdelt,1,0,0,630.5,
+2026-11-12,backfill,gdelt,1,0,0,2342.2,
+2026-11-12,backfill,markets,1,148651,4,19.9,
 2026-11-12,backfill,markets_stooq,0,0,0,5.6,"FetchError: all 11 requests failed — SPX: unexpected response '<!DOCTYPE html><html><head><meta charset=""utf-8""><meta name='"
 2026-11-12,backfill,sec_filings,0,0,0,0,FetchError: SEC_USER_AGENT not set — SEC requires a contact (name + email). See databank/README.md
 2026-11-12,backfill,sec_financials,0,0,0,0,FetchError: SEC_USER_AGENT not set — SEC requires a contact (name + email). See databank/README.md

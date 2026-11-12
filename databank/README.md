@@ -22,7 +22,7 @@ The heavy raw geospatial data goes to Releases, so the repo stays small enough t
 | Industrial production | `macro/fred/INDPRO.csv` | FRED | 1919 |
 | Payrolls, CPI, GDP, unemployment | `macro/fred/*.csv` | FRED | 1939–1948 |
 | Fed funds, M2, 10Y yield | `macro/fred/*.csv` | FRED | 1954–1962 |
-| S&P 500, Dow, Nasdaq, Nikkei, DAX, FTSE, gold, copper | `markets/stooq/*.csv` | Stooq | as early as 1789 |
+| S&P 500, Dow, Nasdaq, Russell, Nikkei, DAX, FTSE, Hang Seng, Euro Stoxx, dollar index, gold, silver, oil, copper | `markets/daily/*.csv` | Yahoo Finance (Stooq fallback) | S&P from 1927; others from their listing |
 | World economies, 15 indicators × ~260 countries | `macro/worldbank/*.csv` | World Bank | 1960 |
 | VIX, oil (WTI/Brent) | `macro/fred/*.csv` | FRED | 1986–1990 |
 | Full Treasury yield curve, daily | `rates/treasury/yield_curve_nominal.csv` | US Treasury | **1990** |
