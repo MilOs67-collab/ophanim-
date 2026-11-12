@@ -1,6 +1,6 @@
 {
  "name": "OPHANIM DATA BANK",
- "generated": "2026-11-12T01:57:12Z",
+ "generated": "2026-11-12T02:39:52Z",
  "tables": [
   {
    "path": "tables/crypto/btc_difficulty.csv",
@@ -894,6 +894,258 @@
    "bytes": 543803
   },
   {
+   "path": "tables/markets/daily/COPPER_FUT.csv",
+   "rows": 6579,
+   "columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "adj_close",
+    "volume",
+    "src"
+   ],
+   "span_col": "date",
+   "first": "2000-08-29",
+   "last": "2026-11-11",
+   "bytes": 743175
+  },
+  {
+   "path": "tables/markets/daily/DAX.csv",
+   "rows": 9829,
+   "columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "adj_close",
+    "volume",
+    "src"
+   ],
+   "span_col": "date",
+   "first": "1987-12-30",
+   "last": "2026-11-10",
+   "bytes": 1030298
+  },
+  {
+   "path": "tables/markets/daily/DJI.csv",
+   "rows": 8778,
+   "columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "adj_close",
+    "volume",
+    "src"
+   ],
+   "span_col": "date",
+   "first": "1992-01-02",
+   "last": "2026-11-11",
+   "bytes": 904889
+  },
+  {
+   "path": "tables/markets/daily/DXY.csv",
+   "rows": 14184,
+   "columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "adj_close",
+    "volume",
+    "src"
+   ],
+   "span_col": "date",
+   "first": "1971-01-04",
+   "last": "2026-11-11",
+   "bytes": 1522287
+  },
+  {
+   "path": "tables/markets/daily/EUROSTOXX50.csv",
+   "rows": 4918,
+   "columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "adj_close",
+    "volume",
+    "src"
+   ],
+   "span_col": "date",
+   "first": "2007-03-30",
+   "last": "2026-11-10",
+   "bytes": 522361
+  },
+  {
+   "path": "tables/markets/daily/FTSE.csv",
+   "rows": 10827,
+   "columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "adj_close",
+    "volume",
+    "src"
+   ],
+   "span_col": "date",
+   "first": "1984-01-03",
+   "last": "2026-11-10",
+   "bytes": 1061888
+  },
+  {
+   "path": "tables/markets/daily/GOLD.csv",
+   "rows": 6575,
+   "columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "adj_close",
+    "volume",
+    "src"
+   ],
+   "span_col": "date",
+   "first": "2000-08-29",
+   "last": "2026-11-11",
+   "bytes": 631955
+  },
+  {
+   "path": "tables/markets/daily/HANGSENG.csv",
+   "rows": 9837,
+   "columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "adj_close",
+    "volume",
+    "src"
+   ],
+   "span_col": "date",
+   "first": "1986-12-31",
+   "last": "2026-11-10",
+   "bytes": 955512
+  },
+  {
+   "path": "tables/markets/daily/NASDAQ.csv",
+   "rows": 14060,
+   "columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "adj_close",
+    "volume",
+    "src"
+   ],
+   "span_col": "date",
+   "first": "1971-02-05",
+   "last": "2026-11-11",
+   "bytes": 1543079
+  },
+  {
+   "path": "tables/markets/daily/NIKKEI.csv",
+   "rows": 15203,
+   "columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "adj_close",
+    "volume",
+    "src"
+   ],
+   "span_col": "date",
+   "first": "1965-01-05",
+   "last": "2026-11-10",
+   "bytes": 1510874
+  },
+  {
+   "path": "tables/markets/daily/RUSSELL2000.csv",
+   "rows": 9868,
+   "columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "adj_close",
+    "volume",
+    "src"
+   ],
+   "span_col": "date",
+   "first": "1987-09-10",
+   "last": "2026-11-11",
+   "bytes": 1139722
+  },
+  {
+   "path": "tables/markets/daily/SILVER.csv",
+   "rows": 6576,
+   "columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "adj_close",
+    "volume",
+    "src"
+   ],
+   "span_col": "date",
+   "first": "2000-08-29",
+   "last": "2026-11-11",
+   "bytes": 727510
+  },
+  {
+   "path": "tables/markets/daily/SPX.csv",
+   "rows": 24834,
+   "columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "adj_close",
+    "volume",
+    "src"
+   ],
+   "span_col": "date",
+   "first": "1927-12-30",
+   "last": "2026-11-11",
+   "bytes": 2808573
+  },
+  {
+   "path": "tables/markets/daily/WTI_FUT.csv",
+   "rows": 6583,
+   "columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "adj_close",
+    "volume",
+    "src"
+   ],
+   "span_col": "date",
+   "first": "2000-08-22",
+   "last": "2026-11-11",
+   "bytes": 729488
+  },
+  {
    "path": "tables/news/gdelt_daily.csv",
    "rows": 0,
    "columns": [
@@ -975,8 +1227,8 @@
    "bytes": 207873
   }
  ],
- "table_count": 69,
- "total_rows": 430277,
- "total_bytes": 14467573,
+ "table_count": 83,
+ "total_rows": 578928,
+ "total_bytes": 30299184,
  "news_days": 0
 }
