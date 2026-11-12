@@ -18,4 +18,10 @@ Celestrak (SGP4) · OpenSky/adsb.lol · Esri/OSM/Carto imagery.
 Optional free keys (prompt-entered, memory-only, never stored): CoinGecko demo ·
 aisstream.io (ships) · Anthropic (cloud AI analyst).
 
+## Data Bank — permanent memory
+Every night a GitHub Action snapshots every feed into [`databank/`](databank/README.md),
+compounding forever. A one-time backfill seeds it with history back to 1990 for the
+Treasury yield curve, 1960 for world economies, and earlier for US macro and market
+indices. See [databank/README.md](databank/README.md) for coverage and the two-minute setup.
+
 *Paper trading only. SIM-badged series are indicative, not market data. Not investment advice.*

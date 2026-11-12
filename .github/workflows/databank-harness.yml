@@ -1,0 +1,23 @@
+name: OPHANIM Data Bank · Harness
+
+# Quality gate: no change to the bank's engine lands unless every suite passes green.
+on:
+  push:
+    paths: ["tools/databank/**", ".github/workflows/databank-*.yml"]
+  pull_request:
+    paths: ["tools/databank/**", ".github/workflows/databank-*.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  harness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml
+      - run: python -m unittest tools.databank.test_databank -v
