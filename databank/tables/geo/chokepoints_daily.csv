@@ -1,10 +1,10 @@
 date,chokepoint,vessels,stationary
 2026-11-12,bab_el_mandeb,0,0
-2026-11-12,bosporus,1,1
-2026-11-12,dover,10,0
-2026-11-12,gibraltar,51,35
+2026-11-12,bosporus,1,0
+2026-11-12,dover,11,0
+2026-11-12,gibraltar,63,43
 2026-11-12,hormuz,0,0
-2026-11-12,malacca,138,89
-2026-11-12,panama,4,4
+2026-11-12,malacca,138,100
+2026-11-12,panama,0,0
 2026-11-12,suez,0,0
-2026-11-12,taiwan_strait,1,0
+2026-11-12,taiwan_strait,2,0
