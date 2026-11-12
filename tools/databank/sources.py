@@ -389,28 +389,72 @@ def bitcoin_chain(ctx, t):
         "mempool_vsize": mem.get("vsize"), "mempool_total_fee": mem.get("total_fee")}], key=("date",)))
 
 
-# ====================================================================== LONG MARKET HISTORY (Stooq)
-@source("markets_stooq")
-def markets_stooq(ctx, t):
+# ====================================================================== LONG MARKET HISTORY
+YF = "https://query1.finance.yahoo.com/v8/finance/chart/{s}?interval=1d&events=history&{span}"
+BROWSER_UA = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                            "(KHTML, like Gecko) Chrome/130.0 Safari/537.36"}
+
+
+def _yahoo_rows(j):
+    res = ((j or {}).get("chart") or {}).get("result") or []
+    if not res:
+        err = ((j or {}).get("chart") or {}).get("error")
+        raise C.FetchError(f"yahoo: no result ({err})")
+    r = res[0]
+    off = (r.get("meta") or {}).get("gmtoffset") or 0
+    q = ((r.get("indicators") or {}).get("quote") or [{}])[0]
+    adj = ((r.get("indicators") or {}).get("adjclose") or [{}])[0].get("adjclose") or []
+    out = []
+    def g(k, i):
+        arr = q.get(k) or []
+        return arr[i] if i < len(arr) else None
+
+    for i, ts in enumerate(r.get("timestamp") or []):
+        close = g("close", i)
+        if close is None:
+            continue
+        out.append({"date": dt.datetime.fromtimestamp(ts + off, dt.timezone.utc).date().isoformat(),
+                    "open": g("open", i), "high": g("high", i), "low": g("low", i), "close": close,
+                    "adj_close": adj[i] if i < len(adj) else None, "volume": g("volume", i),
+                    "src": "yahoo"})
+    return out
+
+
+def _stooq_rows(sym, ctx):
+    url = f"https://stooq.com/q/d/l/?s={urllib.parse.quote(sym)}&i=d"
+    if ctx.mode == "nightly":
+        url += f"&d1={ctx.iso(30).replace('-', '')}&d2={ctx.iso().replace('-', '')}"
+    text = C.fetch_text(url)
+    if not text.lower().startswith("date"):
+        raise C.FetchError(f"stooq: unexpected response {text[:40]!r}")
+    return [{"date": r.get("Date"), "open": C.num(r.get("Open")), "high": C.num(r.get("High")),
+             "low": C.num(r.get("Low")), "close": C.num(r.get("Close")), "volume": C.num(r.get("Volume")),
+             "src": "stooq"} for r in C.read_csv_text(text) if r.get("Date")]
+
+
+@source("markets")
+def markets(ctx, t):
+    span = (f"period1=-2208988800&period2={int(time.time())}" if ctx.mode == "backfill" else "range=1mo")
     fails = []
-    for sym, label in K.STOOQ_SYMBOLS.items():
-        url = f"https://stooq.com/q/d/l/?s={urllib.parse.quote(sym)}&i=d"
-        if ctx.mode == "nightly":
-            url += f"&d1={ctx.iso(30).replace('-', '')}&d2={ctx.iso().replace('-', '')}"
+    for label, (ysym, ssym) in K.MARKET_SYMBOLS.items():
+        rows, errs = None, []
         try:
-            text = C.fetch_text(url)
+            rows = _yahoo_rows(C.fetch_json(YF.format(s=urllib.parse.quote(ysym), span=span),
+                                            headers=BROWSER_UA))
         except C.FetchError as e:
-            fails.append(f"{label}: {e}")
+            errs.append(str(e)[-90:])
+        if not rows and ssym:
+            try:
+                rows = _stooq_rows(ssym, ctx)
+            except C.FetchError as e:
+                errs.append(str(e)[-90:])
+        if not rows:
+            fails.append(f"{label}: " + " | ".join(errs))
             continue
-        if not text.lower().startswith("date"):
-            fails.append(f"{label}: unexpected response {text[:60]!r}")
-            continue
-        rows = [{"date": r.get("Date"), "open": C.num(r.get("Open")), "high": C.num(r.get("High")),
-                 "low": C.num(r.get("Low")), "close": C.num(r.get("Close")), "volume": C.num(r.get("Volume"))}
-                for r in C.read_csv_text(text) if r.get("Date")]
-        t.add(C.upsert_csv(ctx.table("markets", "stooq", f"{label}.csv"), rows, key=("date",)))
+        rows = [r for r in rows if r["date"] < ctx.iso()]  # completed sessions only
+        t.add(C.upsert_csv(ctx.table("markets", "daily", f"{label}.csv"), rows, key=("date",)))
         C.pause(1.0)
-    _partial(t, fails, len(K.STOOQ_SYMBOLS))
+    _partial(t, fails, len(K.MARKET_SYMBOLS))
 
 
 # ====================================================================== NEWS & SOCIAL
@@ -421,6 +465,28 @@ def _gdelt_date(sd):
     return f"{sd[0:4]}-{sd[4:6]}-{sd[6:8]}" if sd and len(sd) >= 8 else None
 
 
+GDELT_GAP = 8.0  # GDELT asks for one request per 5s; shared CI IPs need more room
+
+
+def _gdelt_json(url):
+    """GDELT throttles hard. Wait it out (30s, then 90s) instead of losing the theme."""
+    for wait in (30, 90, None):
+        try:
+            raw = C.fetch(url, retries=1)
+        except C.FetchError as e:
+            if "429" in str(e) and wait:
+                C.pause(wait)
+                continue
+            raise
+        txt = raw.decode("utf-8", "replace").strip()
+        if not txt.startswith("{"):
+            if wait:  # plain-text throttle notice served with HTTP 200
+                C.pause(wait)
+                continue
+            raise C.FetchError(f"not JSON: {txt[:80]!r}")
+        return json.loads(txt, strict=False)
+
+
 @source("gdelt")
 def gdelt(ctx, t):
     span = "3months" if ctx.mode == "backfill" else "3d"
@@ -429,15 +495,19 @@ def gdelt(ctx, t):
         qq = urllib.parse.quote(q + " sourcelang:eng")
         for mode, col in (("timelinetone", "tone"), ("timelinevol", "volume_pct")):
             try:
-                j = C.fetch_json(GD.format(q=qq, m=mode, s=span))
+                j = _gdelt_json(GD.format(q=qq, m=mode, s=span))
+                pts = 0
                 for series in j.get("timeline") or []:
                     for p in series.get("data") or []:
                         d = _gdelt_date(p.get("date"))
                         if d and p.get("value") is not None:
                             daily.setdefault((d, theme), {}).setdefault(col, []).append(p["value"])
+                            pts += 1
+                if not pts:
+                    fails.append(f"{theme}/{mode}: empty timeline {json.dumps(j)[:120]}")
             except C.FetchError as e:
                 fails.append(f"{theme}/{mode}: {e}")
-            C.pause(5.5)  # GDELT asks for one request per 5s
+            C.pause(GDELT_GAP)
     rows = [{"date": d, "theme": th, **{c: round(sum(v) / len(v), 5) for c, v in cols.items()}}
             for (d, th), cols in daily.items() if d < ctx.iso()]  # only completed days
     t.add(C.upsert_csv(ctx.table("news", "gdelt_daily.csv"), rows, key=("date", "theme")))
@@ -447,7 +517,7 @@ def gdelt(ctx, t):
         for theme, q in K.GDELT_THEMES.items():
             qq = urllib.parse.quote(q + " sourcelang:eng")
             try:
-                j = C.fetch_json(GD.format(q=qq, m="artlist", s="1d") + "&maxrecords=100&sort=datedesc")
+                j = _gdelt_json(GD.format(q=qq, m="artlist", s="1d") + "&maxrecords=100&sort=datedesc")
                 arts = j.get("articles") or []
                 ctx.save_raw(f"gdelt_{theme}.json", j)
                 counts.append({"date": ctx.iso(), "source": "gdelt", "topic": theme, "items": len(arts)})
@@ -457,7 +527,7 @@ def gdelt(ctx, t):
                                  "country": a.get("sourcecountry"), "seen": a.get("seendate")})
             except C.FetchError as e:
                 fails.append(f"{theme}/artlist: {e}")
-            C.pause(5.5)
+            C.pause(GDELT_GAP)
         _store_news(ctx, t, recs, counts)
     _partial(t, fails, len(K.GDELT_THEMES) * (3 if ctx.mode == "nightly" else 2))
 

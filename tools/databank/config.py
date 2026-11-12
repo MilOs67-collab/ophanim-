@@ -73,10 +73,14 @@ FRED_SERIES = {
     "DHHNGSP": "Henry Hub natgas (1997-)", "DTWEXBGS": "Broad US dollar index",
 }
 
-# Stooq — long daily index/commodity history, no key. Fail-soft if Stooq changes access.
-STOOQ_SYMBOLS = {"^spx": "SPX", "^dji": "DJI", "^ndq": "NASDAQ", "^nkx": "NIKKEI",
-                 "^dax": "DAX", "^ukx": "FTSE", "^hsi": "HANGSENG",
-                 "xauusd": "GOLD", "xagusd": "SILVER", "cl.f": "WTI_FUT", "hg.f": "COPPER_FUT"}
+# Long daily index/commodity history. label: (Yahoo symbol, Stooq fallback symbol or None)
+MARKET_SYMBOLS = {
+    "SPX": ("^GSPC", "^spx"), "DJI": ("^DJI", "^dji"), "NASDAQ": ("^IXIC", "^ndq"),
+    "RUSSELL2000": ("^RUT", None), "NIKKEI": ("^N225", "^nkx"), "DAX": ("^GDAXI", "^dax"),
+    "FTSE": ("^FTSE", "^ukx"), "HANGSENG": ("^HSI", "^hsi"), "EUROSTOXX50": ("^STOXX50E", None),
+    "DXY": ("DX-Y.NYB", None), "GOLD": ("GC=F", "xauusd"), "SILVER": ("SI=F", "xagusd"),
+    "WTI_FUT": ("CL=F", "cl.f"), "COPPER_FUT": ("HG=F", "hg.f"),
+}
 
 CELESTRAK_GROUPS = ["active", "stations", "gps-ops", "starlink"]
 
