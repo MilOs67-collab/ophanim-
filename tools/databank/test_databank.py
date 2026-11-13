@@ -25,6 +25,23 @@ def ts(d):
     return int(dt.datetime(d.year, d.month, d.day, tzinfo=dt.timezone.utc).timestamp())
 
 
+def gd_line(sqldate, quad="1", root="04", gold=3.0, ment=10, art=4, tone=-2.0, cc="US"):
+    f = [""] * 58
+    f[0], f[1], f[25], f[26], f[28], f[29] = "1", sqldate, "1", root + "0", root, quad
+    f[30], f[31], f[32], f[33], f[34], f[51] = str(gold), str(ment), "1", str(art), str(tone), cc
+    f[57] = "https://news.example/x"
+    return "\t".join(f)
+
+
+def gd_zip(lines, member="x.CSV"):
+    import io
+    import zipfile
+    b = io.BytesIO()
+    with zipfile.ZipFile(b, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr(member, "\n".join(lines) + "\n")
+    return b.getvalue()
+
+
 class Fake:
     """Routes URLs to payloads shaped exactly like each real API."""
 
@@ -135,6 +152,20 @@ class Fake:
             if "silver" in url or "xagusd" in url:
                 return b"No data"
             return b"Date,Open,High,Low,Close,Volume\n1789-05-01,0.5,0.5,0.5,0.5,0\n2026-10-29,6800,6850,6790,6840,1\n"
+        if "data.gdeltproject.org/events/" in url:
+            name = url.rsplit("/", 1)[1]
+            if name.endswith(".export.CSV.zip"):
+                d = dt.date(int(name[:4]), int(name[4:6]), int(name[6:8]))
+                if (td - d).days <= 5:
+                    ds = name[:8]
+                    return gd_zip([gd_line(ds, "1", "04", 3.0, 10, 4, -2.0, "US"),
+                                   gd_line("20200101", "4", "19", -9.0, 30, 2, -8.0, "UP"),  # old date → still this news day
+                                   gd_line(ds, "3", "14", -5.0, 2, 1, -4.0, ""),             # no location → world only
+                                   "garbage line"])
+            if name == "1979.zip":
+                return gd_zip([gd_line("19790101", "2", "05", 6.0, 1, 1, 1.0, "UK"),
+                               gd_line("19790102", "4", "18", -10.0, 1, 1, -5.0, "UK")])
+            raise C.FetchError(f"{url} -> HTTP 404")
         if "gdeltproject" in url:
             if "timeline" in url:
                 return J({"timeline": [{"series": "x", "data": [
@@ -419,7 +450,7 @@ class TestGdeltCircuitBreaker(Base):
 
         def blocked(url, **kw):
             if "gdeltproject" in url:
-                gd["n"] += 1
+                gd["n"] += "api.gdeltproject.org" in url
                 raise C.FetchError(f"{url} -> HTTP 429")
             return base(url, **kw)
         C.fetch_impl = blocked
@@ -435,6 +466,82 @@ class TestGdeltCircuitBreaker(Base):
         self.assertEqual(sum(1 for w in waits if w == 30), 2)
         self.assertNotIn(90, waits)
         self.assertTrue(all(r["ok"] for r in rep["sources"] if r["source"] in ("fred", "air", "space")))
+
+
+class TestGdeltEvents(Base):
+    def test_aggregation_math(self):
+        from tools.databank import gdelt_events as G
+        agg, bad = G.aggregate([gd_line("20261030", "1", "04", 3.0, 10, 4, -2.0, "US"),
+                                gd_line("20261030", "4", "19", -9.0, 30, 2, -8.0, "US"),
+                                gd_line("20261030", "3", "14", -5.0, 2, 1, -4.0, ""),
+                                "bad"])
+        self.assertEqual(bad, 1)
+        rows = {r["country"]: r for r in G.to_rows(agg)}
+        w, us = rows["WORLD"], rows["US"]
+        self.assertEqual((w["events"], us["events"]), (3, 2))
+        self.assertEqual(us["tone"], round((-2 * 4 + -8 * 2) / 6, 3))         # article-weighted
+        self.assertEqual(us["goldstein"], round((3 * 10 + -9 * 30) / 40, 3))  # mention-weighted
+        self.assertEqual((w["quad1"], w["quad3"], w["quad4"]), (1, 1, 1))
+        self.assertEqual((w["protests"], w["violence"]), (1, 1))
+        self.assertEqual(w["conflict_share"], round(2 / 3, 4))
+        self.assertEqual(us["date"], "2026-10-30")
+
+    def test_file_list_spans_1979_to_yesterday(self):
+        from tools.databank import gdelt_events as G
+        fl = G.file_list(TODAY)
+        self.assertEqual(fl[0], "1979.zip")
+        self.assertIn("2005.zip", fl)
+        self.assertIn("200601.zip", fl)
+        self.assertIn("201303.zip", fl)
+        self.assertNotIn("201304.zip", fl)
+        self.assertEqual(fl[-1], (TODAY - dt.timedelta(days=1)).strftime("%Y%m%d") + ".export.CSV.zip")
+        self.assertEqual(len(fl), 27 + 87 + (TODAY - dt.date(2013, 4, 1)).days)
+
+    def test_nightly_daily_files_only_and_resumable(self):
+        rep = self.go("nightly", only={"gdelt_events"})
+        r = rep["sources"][0]
+        self.assertTrue(r["ok"], r["error"])
+        w = self.rows("news", "gdelt_events", "world_daily.csv")
+        self.assertEqual(len(w), 5)  # last 5 days published; older 404 → recorded as missing
+        self.assertEqual(w[-1]["date"], (TODAY - dt.timedelta(days=1)).isoformat())
+        self.assertEqual(w[-1]["events"], "3")  # daily file: everything counts toward its news day
+        ym = (TODAY - dt.timedelta(days=1)).strftime("%Y-%m")
+        cc = {x["country"] for x in self.rows("news", "gdelt_events", "by_country", f"{ym}.csv")}
+        self.assertEqual(cc, {"US", "UP"})
+        with open(os.path.join(self.bank, "state", "gdelt_events.json")) as f:
+            st = json.load(f)
+        self.assertEqual(len(st["done"]), 5)
+        self.assertNotIn("1979.zip", st["done"] + st["missing"])  # yearly files are backfill-only
+        rep2 = self.go("nightly", only={"gdelt_events"})
+        self.assertIn("0 files", rep2["sources"][0]["notes"][0])
+
+    def test_backfill_reaches_1979_by_event_date(self):
+        self.env["GDELT_EVENTS_MINUTES"] = "60"
+        rep = self.go("backfill", only={"gdelt_events"})
+        self.assertTrue(rep["sources"][0]["ok"])
+        w = self.rows("news", "gdelt_events", "world_daily.csv")
+        self.assertEqual(w[0]["date"], "1979-01-01")
+        self.assertEqual(w[1]["violence"], "1")
+        self.assertEqual(self.rows("news", "gdelt_events", "by_country", "1979-01.csv")[0]["country"], "UK")
+
+    def test_budget_and_unreachable_server(self):
+        self.env["GDELT_EVENTS_MINUTES"] = "0"
+        rep = self.go("nightly", only={"gdelt_events"})
+        self.assertTrue(rep["sources"][0]["ok"])
+        self.assertIn("0 files", rep["sources"][0]["notes"][0])
+        self.env["GDELT_EVENTS_MINUTES"] = "15"
+
+        def down(url, **kw):
+            raise C.FetchError(f"{url} -> <urlopen error timed out>")
+        C.fetch_impl = down
+        rep = R.run("nightly", self.bank, None, only={"gdelt_events"}, today=TODAY, env=self.env)
+        self.assertFalse(rep["sources"][0]["ok"])
+        self.assertIn("unreachable", rep["sources"][0]["error"])
+
+    def test_runs_before_gdelt_api_and_after_everything_else(self):
+        rep = self.go("nightly")
+        names = [r["source"] for r in rep["sources"]]
+        self.assertEqual(names[-2:], ["gdelt_events", "gdelt"])
 
 
 class TestShips(Base):

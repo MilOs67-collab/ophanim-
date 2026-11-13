@@ -33,7 +33,8 @@ The heavy raw geospatial data goes to Releases, so the repo stays small enough t
 | Financials of 28 institutions in OPHANIM's twin | `companies/sec_financials/*.csv` | SEC EDGAR XBRL | ~2009 |
 | Bitcoin hashrate and difficulty | `crypto/btc_hashrate.csv` | mempool.space | 2009 |
 | 12 crypto pairs, daily OHLCV | `crypto/coinbase/*.csv` | Coinbase | 2015 (from listing) |
-| News tone and volume, 8 themes | `news/gdelt_daily.csv` | GDELT | last 3 months, then nightly |
+| **Global events: tone, conflict vs. cooperation, protests, violence — worldwide and per country, daily** | `news/gdelt_events/world_daily.csv`, `news/gdelt_events/by_country/YYYY-MM.csv` | GDELT raw event files | **1979** (fills backward from today, about 5 hours of backfill runs) |
+| News tone and volume, 8 themes | `news/gdelt_daily.csv` | GDELT search service (often blocks GitHub) | best effort |
 
 **Starts on day one and compounds forward** (no free archive exists): CoinGecko top 100 coins, Bitcoin blocks and fees, aircraft counts by country, military aircraft, ship counts at 9 chokepoints, satellite catalog, headlines and social posts.
 

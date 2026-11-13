@@ -8,6 +8,10 @@ on:
         description: "Comma-separated sources (blank = all). e.g. fred,fx_ecb"
         required: false
         default: ""
+      gdelt_minutes:
+        description: "Minutes to spend on GDELT raw files this run (history fills backward; re-run to continue)"
+        required: false
+        default: "280"
 
 permissions:
   contents: write
@@ -19,7 +23,7 @@ concurrency:
 jobs:
   backfill:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 350
     steps:
       - uses: actions/checkout@v4
 
@@ -31,6 +35,7 @@ jobs:
         env:
           SEC_USER_AGENT: ${{ vars.SEC_USER_AGENT }}
           ONLY: ${{ inputs.only }}
+          GDELT_EVENTS_MINUTES: ${{ inputs.gdelt_minutes }}
         run: python -m tools.databank.run --mode backfill --bank databank --only "$ONLY"
 
       - name: Commit to the bank
