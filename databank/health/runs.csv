@@ -27,4 +27,4 @@ date,run,source,ok,added,updated,seconds,error
 2026-11-12,nightly,treasury_debt,1,0,0,1.8,
 2026-11-12,nightly,treasury_yields,1,0,0,37.7,
 2026-11-12,nightly,worldbank,1,0,0,0,
-2026-11-13,backfill,gdelt_events,1,161430,0,721,
+2026-11-13,backfill,gdelt_events,1,2731106,0,6151.4,

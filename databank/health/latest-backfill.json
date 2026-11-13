@@ -1,8 +1,8 @@
 {
  "run": "backfill",
  "date": "2026-11-13",
- "started": "2026-11-13T03:46:59Z",
- "finished": "2026-11-13T03:59:00Z",
+ "started": "2026-11-13T04:36:15Z",
+ "finished": "2026-11-13T06:18:47Z",
  "ok": 1,
  "failed": 0,
  "skipped": 0,
@@ -10,13 +10,13 @@
   {
    "source": "gdelt_events",
    "ok": true,
-   "added": 161430,
+   "added": 2731106,
    "updated": 0,
-   "seconds": 721.0,
+   "seconds": 6151.4,
    "skipped": false,
    "error": null,
    "notes": [
-    "734 files, 81,443,913 events this run \u00b7 734/5088 files done \u00b7 4336 left \u00b7 18 missing at source"
+    "4329 files, 817,022,070 events this run \u00b7 5063/5088 files done \u00b7 1 left \u00b7 24 missing at source"
    ]
   }
  ]
