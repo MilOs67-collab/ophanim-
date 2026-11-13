@@ -11,12 +11,15 @@ import time
 
 from . import common as C
 from . import sources as S
+from . import gdelt_events  # noqa: F401  (registers the GDELT raw-file source)
 
 
 def run(mode, bank, raw=None, only=None, today=None, env=None):
     ctx = C.Context(bank, raw, mode, today=today, env=env)
     started = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    order = sorted(S.REGISTRY, key=lambda r: r[0] in S.SLOW_LAST)  # stable: slow feeds go last
+    slow = list(S.SLOW_LAST_ORDER)
+    order = sorted(S.REGISTRY, key=lambda r: (r[0] in S.SLOW_LAST,
+                                              slow.index(r[0]) if r[0] in slow else 0))
     for name, modes, fn in order:
         if mode not in modes or (only and name not in only):
             continue

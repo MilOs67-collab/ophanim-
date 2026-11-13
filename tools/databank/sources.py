@@ -15,7 +15,8 @@ from . import common as C
 from . import config as K
 
 REGISTRY = []
-SLOW_LAST = {"gdelt"}  # throttled feeds run after everything else
+SLOW_LAST = {"gdelt"}  # throttled / heavy feeds run after everything else
+SLOW_LAST_ORDER = ["gdelt_events", "gdelt"]  # among those: raw files first, throttled API dead last
 
 
 def source(name, modes=("nightly", "backfill")):
