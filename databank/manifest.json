@@ -1,10 +1,10 @@
 {
  "name": "OPHANIM DATA BANK",
- "generated": "2026-11-13T06:19:25Z",
+ "generated": "2026-11-13T14:45:27Z",
  "tables": [
   {
    "path": "tables/companies/sec_filings.csv",
-   "rows": 110456,
+   "rows": 110669,
    "columns": [
     "filing_date",
     "accession",
@@ -17,12 +17,12 @@
    ],
    "span_col": "filing_date",
    "first": "2013-07-02",
-   "last": "2026-11-12",
-   "bytes": 10093608
+   "last": "2026-11-13",
+   "bytes": 10111886
   },
   {
    "path": "tables/crypto/btc_blocks.csv",
-   "rows": 208,
+   "rows": 327,
    "columns": [
     "height",
     "date",
@@ -36,12 +36,12 @@
    ],
    "span_col": "date",
    "first": "2026-11-10T23:44:49Z",
-   "last": "2026-11-12T15:07:07Z",
-   "bytes": 16713
+   "last": "2026-11-13T14:33:09Z",
+   "bytes": 25941
   },
   {
    "path": "tables/crypto/btc_daily.csv",
-   "rows": 1,
+   "rows": 2,
    "columns": [
     "date",
     "tip_height",
@@ -55,8 +55,8 @@
    ],
    "span_col": "date",
    "first": "2026-11-12",
-   "last": "2026-11-12",
-   "bytes": 157
+   "last": "2026-11-13",
+   "bytes": 206
   },
   {
    "path": "tables/crypto/btc_difficulty.csv",
@@ -86,7 +86,7 @@
   },
   {
    "path": "tables/crypto/coinbase/ADA-USD.csv",
-   "rows": 2065,
+   "rows": 2066,
    "columns": [
     "date",
     "open",
@@ -97,12 +97,12 @@
    ],
    "span_col": "date",
    "first": "2021-03-18",
-   "last": "2026-11-11",
-   "bytes": 110234
+   "last": "2026-11-12",
+   "bytes": 110294
   },
   {
    "path": "tables/crypto/coinbase/AVAX-USD.csv",
-   "rows": 1869,
+   "rows": 1870,
    "columns": [
     "date",
     "open",
@@ -113,12 +113,12 @@
    ],
    "span_col": "date",
    "first": "2021-09-30",
-   "last": "2026-11-11",
-   "bytes": 89522
+   "last": "2026-11-12",
+   "bytes": 89571
   },
   {
    "path": "tables/crypto/coinbase/BCH-USD.csv",
-   "rows": 3245,
+   "rows": 3246,
    "columns": [
     "date",
     "open",
@@ -129,12 +129,12 @@
    ],
    "span_col": "date",
    "first": "2017-12-20",
-   "last": "2026-11-11",
-   "bytes": 171335
+   "last": "2026-11-12",
+   "bytes": 171384
   },
   {
    "path": "tables/crypto/coinbase/BTC-USD.csv",
-   "rows": 4133,
+   "rows": 4134,
    "columns": [
     "date",
     "open",
@@ -145,12 +145,12 @@
    ],
    "span_col": "date",
    "first": "2015-07-20",
-   "last": "2026-11-11",
-   "bytes": 235951
+   "last": "2026-11-12",
+   "bytes": 236009
   },
   {
    "path": "tables/crypto/coinbase/DOGE-USD.csv",
-   "rows": 1988,
+   "rows": 1989,
    "columns": [
     "date",
     "open",
@@ -161,12 +161,12 @@
    ],
    "span_col": "date",
    "first": "2021-06-03",
-   "last": "2026-11-11",
-   "bytes": 106282
+   "last": "2026-11-12",
+   "bytes": 106336
   },
   {
    "path": "tables/crypto/coinbase/DOT-USD.csv",
-   "rows": 1975,
+   "rows": 1976,
    "columns": [
     "date",
     "open",
@@ -177,12 +177,12 @@
    ],
    "span_col": "date",
    "first": "2021-06-16",
-   "last": "2026-11-11",
-   "bytes": 96909
+   "last": "2026-11-12",
+   "bytes": 96965
   },
   {
    "path": "tables/crypto/coinbase/ETH-USD.csv",
-   "rows": 3828,
+   "rows": 3829,
    "columns": [
     "date",
     "open",
@@ -193,12 +193,12 @@
    ],
    "span_col": "date",
    "first": "2016-05-18",
-   "last": "2026-11-11",
-   "bytes": 210124
+   "last": "2026-11-12",
+   "bytes": 210183
   },
   {
    "path": "tables/crypto/coinbase/LINK-USD.csv",
-   "rows": 2695,
+   "rows": 2696,
    "columns": [
     "date",
     "open",
@@ -209,12 +209,12 @@
    ],
    "span_col": "date",
    "first": "2019-06-27",
-   "last": "2026-11-11",
-   "bytes": 132278
+   "last": "2026-11-12",
+   "bytes": 132326
   },
   {
    "path": "tables/crypto/coinbase/LTC-USD.csv",
-   "rows": 3738,
+   "rows": 3739,
    "columns": [
     "date",
     "open",
@@ -225,12 +225,12 @@
    ],
    "span_col": "date",
    "first": "2016-08-17",
-   "last": "2026-11-11",
-   "bytes": 189469
+   "last": "2026-11-12",
+   "bytes": 189522
   },
   {
    "path": "tables/crypto/coinbase/SOL-USD.csv",
-   "rows": 1974,
+   "rows": 1975,
    "columns": [
     "date",
     "open",
@@ -241,12 +241,12 @@
    ],
    "span_col": "date",
    "first": "2021-06-17",
-   "last": "2026-11-11",
-   "bytes": 99759
+   "last": "2026-11-12",
+   "bytes": 99810
   },
   {
    "path": "tables/crypto/coinbase/UNI-USD.csv",
-   "rows": 2247,
+   "rows": 2248,
    "columns": [
     "date",
     "open",
@@ -257,12 +257,12 @@
    ],
    "span_col": "date",
    "first": "2020-09-17",
-   "last": "2026-11-11",
-   "bytes": 113086
+   "last": "2026-11-12",
+   "bytes": 113138
   },
   {
    "path": "tables/crypto/coinbase/XRP-USD.csv",
-   "rows": 1218,
+   "rows": 1219,
    "columns": [
     "date",
     "open",
@@ -273,12 +273,12 @@
    ],
    "span_col": "date",
    "first": "2023-07-13",
-   "last": "2026-11-11",
-   "bytes": 66370
+   "last": "2026-11-12",
+   "bytes": 66423
   },
   {
    "path": "tables/crypto/coingecko_top100_daily.csv",
-   "rows": 101,
+   "rows": 201,
    "columns": [
     "date",
     "id",
@@ -293,12 +293,12 @@
    ],
    "span_col": "date",
    "first": "2026-11-12",
-   "last": "2026-11-12",
-   "bytes": 9235
+   "last": "2026-11-13",
+   "bytes": 18251
   },
   {
    "path": "tables/crypto/global_daily.csv",
-   "rows": 1,
+   "rows": 2,
    "columns": [
     "date",
     "total_mcap_usd",
@@ -309,12 +309,12 @@
    ],
    "span_col": "date",
    "first": "2026-11-12",
-   "last": "2026-11-12",
-   "bytes": 167
+   "last": "2026-11-13",
+   "bytes": 257
   },
   {
    "path": "tables/fx/ecb_per_usd.csv",
-   "rows": 7134,
+   "rows": 7135,
    "columns": [
     "date",
     "AUD",
@@ -364,12 +364,12 @@
    ],
    "span_col": "date",
    "first": "1999-01-04",
-   "last": "2026-11-11",
-   "bytes": 1970362
+   "last": "2026-11-12",
+   "bytes": 1970591
   },
   {
    "path": "tables/geo/air_by_country_daily.csv",
-   "rows": 119,
+   "rows": 227,
    "columns": [
     "date",
     "country",
@@ -377,12 +377,12 @@
    ],
    "span_col": "date",
    "first": "2026-11-12",
-   "last": "2026-11-12",
-   "bytes": 2869
+   "last": "2026-11-13",
+   "bytes": 5430
   },
   {
    "path": "tables/geo/air_daily.csv",
-   "rows": 1,
+   "rows": 2,
    "columns": [
     "date",
     "aircraft",
@@ -391,12 +391,12 @@
    ],
    "span_col": "date",
    "first": "2026-11-12",
-   "last": "2026-11-12",
-   "bytes": 59
+   "last": "2026-11-13",
+   "bytes": 86
   },
   {
    "path": "tables/geo/chokepoints_daily.csv",
-   "rows": 9,
+   "rows": 18,
    "columns": [
     "date",
     "chokepoint",
@@ -405,12 +405,12 @@
    ],
    "span_col": "date",
    "first": "2026-11-12",
-   "last": "2026-11-12",
-   "bytes": 257
+   "last": "2026-11-13",
+   "bytes": 478
   },
   {
    "path": "tables/geo/ships_daily.csv",
-   "rows": 1,
+   "rows": 2,
    "columns": [
     "date",
     "vessels_seen",
@@ -418,12 +418,12 @@
    ],
    "span_col": "date",
    "first": "2026-11-12",
-   "last": "2026-11-12",
-   "bytes": 53
+   "last": "2026-11-13",
+   "bytes": 73
   },
   {
    "path": "tables/geo/space_daily.csv",
-   "rows": 4,
+   "rows": 8,
    "columns": [
     "date",
     "group",
@@ -431,20 +431,20 @@
    ],
    "span_col": "date",
    "first": "2026-11-12",
-   "last": "2026-11-12",
-   "bytes": 114
+   "last": "2026-11-13",
+   "bytes": 209
   },
   {
    "path": "tables/macro/fred/BAA10Y.csv",
-   "rows": 10214,
+   "rows": 10215,
    "columns": [
     "date",
     "value"
    ],
    "span_col": "date",
    "first": "1986-01-02",
-   "last": "2026-11-09",
-   "bytes": 162297
+   "last": "2026-11-10",
+   "bytes": 162313
   },
   {
    "path": "tables/macro/fred/CPIAUCSL.csv",
@@ -472,99 +472,99 @@
   },
   {
    "path": "tables/macro/fred/DCOILBRENTEU.csv",
-   "rows": 9122,
+   "rows": 9128,
    "columns": [
     "date",
     "value"
    ],
    "span_col": "date",
    "first": "1987-05-20",
-   "last": "2026-11-03",
-   "bytes": 154763
+   "last": "2026-11-11",
+   "bytes": 154865
   },
   {
    "path": "tables/macro/fred/DCOILWTICO.csv",
-   "rows": 9537,
+   "rows": 9543,
    "columns": [
     "date",
     "value"
    ],
    "span_col": "date",
    "first": "1986-01-02",
-   "last": "2026-11-03",
-   "bytes": 161524
+   "last": "2026-11-11",
+   "bytes": 161625
   },
   {
    "path": "tables/macro/fred/DFF.csv",
-   "rows": 26430,
+   "rows": 26432,
    "columns": [
     "date",
     "value"
    ],
    "span_col": "date",
    "first": "1954-07-01",
-   "last": "2026-11-09",
-   "bytes": 414674
+   "last": "2026-11-11",
+   "bytes": 414706
   },
   {
    "path": "tables/macro/fred/DGS10.csv",
-   "rows": 16199,
+   "rows": 16200,
    "columns": [
     "date",
     "value"
    ],
    "span_col": "date",
    "first": "1962-01-02",
-   "last": "2026-11-09",
-   "bytes": 258602
+   "last": "2026-11-10",
+   "bytes": 258618
   },
   {
    "path": "tables/macro/fred/DGS2.csv",
-   "rows": 12607,
+   "rows": 12608,
    "columns": [
     "date",
     "value"
    ],
    "span_col": "date",
    "first": "1976-06-01",
-   "last": "2026-11-09",
-   "bytes": 201407
+   "last": "2026-11-10",
+   "bytes": 201423
   },
   {
    "path": "tables/macro/fred/DGS30.csv",
-   "rows": 12429,
+   "rows": 12430,
    "columns": [
     "date",
     "value"
    ],
    "span_col": "date",
    "first": "1977-02-15",
-   "last": "2026-11-09",
-   "bytes": 198869
+   "last": "2026-11-10",
+   "bytes": 198885
   },
   {
    "path": "tables/macro/fred/DGS3MO.csv",
-   "rows": 11297,
+   "rows": 11298,
    "columns": [
     "date",
     "value"
    ],
    "span_col": "date",
    "first": "1981-09-01",
-   "last": "2026-11-09",
-   "bytes": 179929
+   "last": "2026-11-10",
+   "bytes": 179944
   },
   {
    "path": "tables/macro/fred/DHHNGSP.csv",
-   "rows": 5722,
+   "rows": 5728,
    "columns": [
     "date",
     "value"
    ],
    "span_col": "date",
    "first": "1997-01-07",
-   "last": "2026-11-03",
-   "bytes": 90839
+   "last": "2026-11-11",
+   "bytes": 90928
   },
   {
    "path": "tables/macro/fred/DTWEXBGS.csv",
@@ -640,27 +640,27 @@
   },
   {
    "path": "tables/macro/fred/MORTGAGE30US.csv",
-   "rows": 2902,
+   "rows": 2903,
    "columns": [
     "date",
     "value"
    ],
    "span_col": "date",
    "first": "1971-04-02",
-   "last": "2026-11-05",
-   "bytes": 46617
+   "last": "2026-11-12",
+   "bytes": 46633
   },
   {
    "path": "tables/macro/fred/NASDAQCOM.csv",
-   "rows": 14061,
+   "rows": 14062,
    "columns": [
     "date",
     "value"
    ],
    "span_col": "date",
    "first": "1971-02-05",
-   "last": "2026-11-11",
-   "bytes": 259971
+   "last": "2026-11-12",
+   "bytes": 259991
   },
   {
    "path": "tables/macro/fred/NFCI.csv",
@@ -700,15 +700,15 @@
   },
   {
    "path": "tables/macro/fred/RRPONTSYD.csv",
-   "rows": 3365,
+   "rows": 3366,
    "columns": [
     "date",
     "value"
    ],
    "span_col": "date",
    "first": "2003-02-07",
-   "last": "2026-11-10",
-   "bytes": 60720
+   "last": "2026-11-12",
+   "bytes": 60736
   },
   {
    "path": "tables/macro/fred/RSAFS.csv",
@@ -736,51 +736,51 @@
   },
   {
    "path": "tables/macro/fred/STLFSI4.csv",
-   "rows": 1714,
+   "rows": 1715,
    "columns": [
     "date",
     "value"
    ],
    "span_col": "date",
    "first": "1993-12-31",
-   "last": "2026-10-30",
-   "bytes": 31800
+   "last": "2026-11-06",
+   "bytes": 31820
   },
   {
    "path": "tables/macro/fred/T10Y2Y.csv",
-   "rows": 12608,
+   "rows": 12609,
    "columns": [
     "date",
     "value"
    ],
    "span_col": "date",
    "first": "1976-06-01",
-   "last": "2026-11-10",
-   "bytes": 202374
+   "last": "2026-11-12",
+   "bytes": 202390
   },
   {
    "path": "tables/macro/fred/T10Y3M.csv",
-   "rows": 11217,
+   "rows": 11218,
    "columns": [
     "date",
     "value"
    ],
    "span_col": "date",
    "first": "1982-01-04",
-   "last": "2026-11-10",
-   "bytes": 179416
+   "last": "2026-11-12",
+   "bytes": 179432
   },
   {
    "path": "tables/macro/fred/T5YIE.csv",
-   "rows": 5969,
+   "rows": 5970,
    "columns": [
     "date",
     "value"
    ],
    "span_col": "date",
    "first": "2003-01-02",
-   "last": "2026-11-10",
-   "bytes": 94900
+   "last": "2026-11-12",
+   "bytes": 94916
   },
   {
    "path": "tables/macro/fred/UMCSENT.csv",
@@ -832,15 +832,15 @@
   },
   {
    "path": "tables/macro/fred/WALCL.csv",
-   "rows": 1247,
+   "rows": 1248,
    "columns": [
     "date",
     "value"
    ],
    "span_col": "date",
    "first": "2002-12-18",
-   "last": "2026-11-04",
-   "bytes": 23403
+   "last": "2026-11-11",
+   "bytes": 23422
   },
   {
    "path": "tables/macro/worldbank/BN.CAB.XOKA.GD.ZS.csv",
@@ -1054,7 +1054,7 @@
   },
   {
    "path": "tables/markets/daily/COPPER_FUT.csv",
-   "rows": 6579,
+   "rows": 6580,
    "columns": [
     "date",
     "open",
@@ -1067,12 +1067,12 @@
    ],
    "span_col": "date",
    "first": "2000-08-29",
-   "last": "2026-11-11",
-   "bytes": 743174
+   "last": "2026-11-12",
+   "bytes": 743285
   },
   {
    "path": "tables/markets/daily/DAX.csv",
-   "rows": 9830,
+   "rows": 9831,
    "columns": [
     "date",
     "open",
@@ -1085,12 +1085,12 @@
    ],
    "span_col": "date",
    "first": "1987-12-30",
-   "last": "2026-11-11",
-   "bytes": 1030399
+   "last": "2026-11-12",
+   "bytes": 1030502
   },
   {
    "path": "tables/markets/daily/DJI.csv",
-   "rows": 8778,
+   "rows": 8779,
    "columns": [
     "date",
     "open",
@@ -1103,12 +1103,12 @@
    ],
    "span_col": "date",
    "first": "1992-01-02",
-   "last": "2026-11-11",
-   "bytes": 904889
+   "last": "2026-11-12",
+   "bytes": 904989
   },
   {
    "path": "tables/markets/daily/DXY.csv",
-   "rows": 14184,
+   "rows": 14185,
    "columns": [
     "date",
     "open",
@@ -1121,12 +1121,12 @@
    ],
    "span_col": "date",
    "first": "1971-01-04",
-   "last": "2026-11-11",
-   "bytes": 1522289
+   "last": "2026-11-12",
+   "bytes": 1522403
   },
   {
    "path": "tables/markets/daily/EUROSTOXX50.csv",
-   "rows": 4919,
+   "rows": 4920,
    "columns": [
     "date",
     "open",
@@ -1139,12 +1139,12 @@
    ],
    "span_col": "date",
    "first": "2007-03-30",
-   "last": "2026-11-11",
-   "bytes": 522468
+   "last": "2026-11-12",
+   "bytes": 522578
   },
   {
    "path": "tables/markets/daily/FTSE.csv",
-   "rows": 10828,
+   "rows": 10829,
    "columns": [
     "date",
     "open",
@@ -1157,101 +1157,11 @@
    ],
    "span_col": "date",
    "first": "1984-01-03",
-   "last": "2026-11-11",
-   "bytes": 1061981
+   "last": "2026-11-12",
+   "bytes": 1062089
   },
   {
    "path": "tables/markets/daily/GOLD.csv",
-   "rows": 6575,
-   "columns": [
-    "date",
-    "open",
-    "high",
-    "low",
-    "close",
-    "adj_close",
-    "volume",
-    "src"
-   ],
-   "span_col": "date",
-   "first": "2000-08-29",
-   "last": "2026-11-11",
-   "bytes": 631968
-  },
-  {
-   "path": "tables/markets/daily/HANGSENG.csv",
-   "rows": 9838,
-   "columns": [
-    "date",
-    "open",
-    "high",
-    "low",
-    "close",
-    "adj_close",
-    "volume",
-    "src"
-   ],
-   "span_col": "date",
-   "first": "1986-12-31",
-   "last": "2026-11-11",
-   "bytes": 955618
-  },
-  {
-   "path": "tables/markets/daily/NASDAQ.csv",
-   "rows": 14060,
-   "columns": [
-    "date",
-    "open",
-    "high",
-    "low",
-    "close",
-    "adj_close",
-    "volume",
-    "src"
-   ],
-   "span_col": "date",
-   "first": "1971-02-05",
-   "last": "2026-11-11",
-   "bytes": 1543081
-  },
-  {
-   "path": "tables/markets/daily/NIKKEI.csv",
-   "rows": 15204,
-   "columns": [
-    "date",
-    "open",
-    "high",
-    "low",
-    "close",
-    "adj_close",
-    "volume",
-    "src"
-   ],
-   "span_col": "date",
-   "first": "1965-01-05",
-   "last": "2026-11-11",
-   "bytes": 1510973
-  },
-  {
-   "path": "tables/markets/daily/RUSSELL2000.csv",
-   "rows": 9868,
-   "columns": [
-    "date",
-    "open",
-    "high",
-    "low",
-    "close",
-    "adj_close",
-    "volume",
-    "src"
-   ],
-   "span_col": "date",
-   "first": "1987-09-10",
-   "last": "2026-11-11",
-   "bytes": 1139734
-  },
-  {
-   "path": "tables/markets/daily/SILVER.csv",
    "rows": 6576,
    "columns": [
     "date",
@@ -1265,12 +1175,102 @@
    ],
    "span_col": "date",
    "first": "2000-08-29",
-   "last": "2026-11-11",
-   "bytes": 727509
+   "last": "2026-11-12",
+   "bytes": 632068
+  },
+  {
+   "path": "tables/markets/daily/HANGSENG.csv",
+   "rows": 9839,
+   "columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "adj_close",
+    "volume",
+    "src"
+   ],
+   "span_col": "date",
+   "first": "1986-12-31",
+   "last": "2026-11-12",
+   "bytes": 955723
+  },
+  {
+   "path": "tables/markets/daily/NASDAQ.csv",
+   "rows": 14061,
+   "columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "adj_close",
+    "volume",
+    "src"
+   ],
+   "span_col": "date",
+   "first": "1971-02-05",
+   "last": "2026-11-12",
+   "bytes": 1543185
+  },
+  {
+   "path": "tables/markets/daily/NIKKEI.csv",
+   "rows": 15205,
+   "columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "adj_close",
+    "volume",
+    "src"
+   ],
+   "span_col": "date",
+   "first": "1965-01-05",
+   "last": "2026-11-12",
+   "bytes": 1511068
+  },
+  {
+   "path": "tables/markets/daily/RUSSELL2000.csv",
+   "rows": 9869,
+   "columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "adj_close",
+    "volume",
+    "src"
+   ],
+   "span_col": "date",
+   "first": "1987-09-10",
+   "last": "2026-11-12",
+   "bytes": 1139845
+  },
+  {
+   "path": "tables/markets/daily/SILVER.csv",
+   "rows": 6577,
+   "columns": [
+    "date",
+    "open",
+    "high",
+    "low",
+    "close",
+    "adj_close",
+    "volume",
+    "src"
+   ],
+   "span_col": "date",
+   "first": "2000-08-29",
+   "last": "2026-11-12",
+   "bytes": 727617
   },
   {
    "path": "tables/markets/daily/SPX.csv",
-   "rows": 24834,
+   "rows": 24835,
    "columns": [
     "date",
     "open",
@@ -1283,12 +1283,12 @@
    ],
    "span_col": "date",
    "first": "1927-12-30",
-   "last": "2026-11-11",
-   "bytes": 2808573
+   "last": "2026-11-12",
+   "bytes": 2808678
   },
   {
    "path": "tables/markets/daily/WTI_FUT.csv",
-   "rows": 6583,
+   "rows": 6584,
    "columns": [
     "date",
     "open",
@@ -1301,8 +1301,8 @@
    ],
    "span_col": "date",
    "first": "2000-08-22",
-   "last": "2026-11-11",
-   "bytes": 729503
+   "last": "2026-11-12",
+   "bytes": 729603
   },
   {
    "path": "tables/news/gdelt_daily.csv",
@@ -15096,7 +15096,7 @@
   },
   {
    "path": "tables/news/gdelt_events/by_country/2026-11.csv",
-   "rows": 2382,
+   "rows": 2606,
    "columns": [
     "date",
     "country",
@@ -15115,12 +15115,12 @@
    ],
    "span_col": "date",
    "first": "2026-11-01",
-   "last": "2026-11-11",
-   "bytes": 141650
+   "last": "2026-11-12",
+   "bytes": 155046
   },
   {
    "path": "tables/news/gdelt_events/world_daily.csv",
-   "rows": 17458,
+   "rows": 17459,
    "columns": [
     "date",
     "country",
@@ -15139,12 +15139,12 @@
    ],
    "span_col": "date",
    "first": "1979-01-01",
-   "last": "2026-11-11",
-   "bytes": 1456424
+   "last": "2026-11-12",
+   "bytes": 1456517
   },
   {
    "path": "tables/news/news_daily_counts.csv",
-   "rows": 4,
+   "rows": 8,
    "columns": [
     "date",
     "source",
@@ -15153,8 +15153,8 @@
    ],
    "span_col": "date",
    "first": "2026-11-12",
-   "last": "2026-11-12",
-   "bytes": 171
+   "last": "2026-11-13",
+   "bytes": 318
   },
   {
    "path": "tables/rates/treasury/avg_interest_rates.csv",
@@ -15172,7 +15172,7 @@
   },
   {
    "path": "tables/rates/treasury/debt_to_penny.csv",
-   "rows": 8431,
+   "rows": 8432,
    "columns": [
     "date",
     "debt_public",
@@ -15181,12 +15181,12 @@
    ],
    "span_col": "date",
    "first": "1993-04-01",
-   "last": "2026-11-09",
-   "bytes": 434088
+   "last": "2026-11-10",
+   "bytes": 434152
   },
   {
    "path": "tables/rates/treasury/yield_curve_nominal.csv",
-   "rows": 9222,
+   "rows": 9223,
    "columns": [
     "date",
     "3mo",
@@ -15206,12 +15206,12 @@
    ],
    "span_col": "date",
    "first": "1990-01-02",
-   "last": "2026-11-10",
-   "bytes": 618878
+   "last": "2026-11-12",
+   "bytes": 618957
   },
   {
    "path": "tables/rates/treasury/yield_curve_real.csv",
-   "rows": 5969,
+   "rows": 5970,
    "columns": [
     "date",
     "5yr",
@@ -15222,12 +15222,12 @@
    ],
    "span_col": "date",
    "first": "2003-01-02",
-   "last": "2026-11-10",
-   "bytes": 207873
+   "last": "2026-11-12",
+   "bytes": 207909
   }
  ],
  "table_count": 670,
- "total_rows": 3582385,
- "total_bytes": 204712585,
- "news_days": 1
+ "total_rows": 3583234,
+ "total_bytes": 204768872,
+ "news_days": 2
 }
