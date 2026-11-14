@@ -1,6 +1,65 @@
 <!DOCTYPE html>
 <!--
   OPHANIM — CHANGELOG
+  v3.5  GOD'S EYE VIEW: built-in God's Eye retired (satellites, aircraft,
+        ship dots, street view, live cams) in favour of Bilawal Sidhu's
+        open-source God's Eye View (MIT, github.com/bilawalsidhu/
+        gods-eye-view), run locally via Pinokio and auto-updated. Overwatch
+        panel keeps WarWatch / Chokepoints / Datacenters / theater heat and
+        gains 🌐 GOD'S EYE VIEW (opens at the globe's current lat/lon/alt via
+        its #lat=&lon=&alt= link; address remembered in oph:gev.url) and
+        🚢 AIS FEED (headless aisstream socket → Chokepoint.ingest, key in
+        oph:ais.key, auto-resumes). OmniFeed aisstream source reads the same
+        key. SelfTest checks Overwatch. Window.GodsEye removed.
+  v3.4  DATACENTER WATCH: 10th OMNIFEED feed (datacenter-registry, derived) ·
+        user-supplied DATACENTER_REGISTRY adapter transplanted verbatim-
+        adjacent · seed datasets recovered verbatim from source session
+        (22 named hyperscale/colo hubs + 7-country stats, ~11,038 global
+        mid-estimate, 2026-07 vintage) embedded per single-file doctrine ·
+        same-origin data/dc_*.json upgrade lane (commit refreshed JSONs to
+        the repo → badge LIVE·FILE) · REST stub retained, disabled until a
+        licensed Baxtel/DC Byte key · ⚡ globe layer (glow points, hyperscale
+        sized up, click popovers w/ operators + global stats) · validation
+        throws on zero-markers/zero-countries · self-heal to last-good.
+        Infra-exposure Quant signal deferred: a static registry emits no
+        honest time-series — slot activates with a licensed live feed.
+  v3.3  SYNAPSE MERGED: verbatim OPHX engine transplanted (recovered from
+        source session, re-verified 12/12 standalone) — Medallion audit
+        (Wilson LB, PF, decay, grades) sizes proposals; Aladdin paired-seed
+        3k-path Monte Carlo computes marginal VaR; verdicts APPROVED/SCALED/
+        VETOED gate every Quant trade ahead of the static chain; realized
+        closePos PnL feeds recordOutcome (closed loop). Bridge: master ←
+        top-12 live coins (factor-tagged, vol annualized); corr ← 7d-hourly
+        Pearson (Cholesky-validated, 0.8C+0.2I shrinkage) with daily-close
+        accumulator taking over at ≥30 shared days; portfolio ← Quant paper
+        book by reference — engine position writes reverted, trade() keeps
+        sole mutation authority; Store keys oph:medallion.trades /
+        synapse.ledger / aladdin.limits / aladdin.corr / aladdin.dailycloses;
+        AUTOGNOSIS retained in shadow (dual weights displayed). Non-mutating
+        SYNAPSE check added to global SelfTest.
+  v3.2  SETTLEMENT WATCH station (10th mode): PPD swaps tape (rAF FIFO
+        engine, EOD file-drop lane via Sentinel → data/ppd_latest.json, SIM
+        seed 20260718 until job lands, CFTC cap-flag rendering) · Canton
+        pulse (snapshot 2026-07-18 constants, keyless scan-API live attempt,
+        4s timeout, self-heal w/ reason, 60s poll post-activation) · CNS
+        fails x-ray (fortnightly batch lane → data/ftd_latest.json,
+        z-severity CALM/ELEVATED/STRESS/CRITICAL, flag-gated SW_FEED_VETO
+        pre-trade stress input, default OFF) · 3 OMNIFEED derived
+        registrations · boot self-test · every lane badged LIVE/SNAPSHOT/SIM.
+        Ledger: SYNAPSE v3.1 = unmerged external artifact; this file’s
+        v3.1 = Chokepoint Watch.
+  v3.1  CHOKEPOINT WATCH: 16 geofenced chokepoints/ports · anchored/dwell
+        counts from the existing AIS stream (no new network) · hour-of-day
+        14d median baselines · CI anomaly states (2-consecutive rule, freeze
+        on stale AIS) · globe fence layer + labels + popovers · CI heatstrip
+        + per-fence CI charts · omni:event transitions · OMNIFEED derived
+        adapter chokepoint-watch · AUTOGNOSIS candidates sig_chokepoint_oil &
+        sig_chokepoint_shipping (observed, not blended) · storage key
+        oph:chokepoint.v1 (400KB cap, 28→14→7d retention degradation).
+  v3.0  AUTOGNOSIS: self-learning Quant weights (outcome-graded, bounded),
+        yield-adaptive OmniFeed polling, boot self-test, persistent learning
+        (localStorage on real origins), one-click diagnostics report for the
+        Claude improvement loop. The build that grades itself.
   v2.9  WarWatch theater: omni-stream pulses w/ severity scoring, 24h theater
         heat, click-to-filter wire. Overwatch WARWATCH toggle.
   v2.7+OF  OMNIFEED universal connector: registry(9), 5 adapters, limiter,
@@ -508,27 +567,21 @@ button.wt-mkt:hover{border-color:var(--wc);box-shadow:0 0 14px color-mix(in srgb
 @media (max-width:1360px){.mode{font-size:11px;letter-spacing:.14em}}
 
 
-/* ---- GOD'S EYE ---- */
+/* ---- OVERWATCH ---- */
 #ge-panel{position:absolute;top:56px;right:14px;z-index:1001;background:var(--panel-solid);border:1px solid var(--line-bright);border-radius:3px;padding:10px;width:236px}
 #ge-panel h5{font-family:var(--font-d);font-size:11px;letter-spacing:.2em;color:var(--cyan);margin-bottom:8px}
 #ge-panel button{display:block;width:100%;text-align:left;font-family:var(--font-m);font-size:10px;letter-spacing:.08em;padding:8px 9px;border:1px solid var(--line);border-radius:2px;margin-bottom:6px;color:var(--txt);transition:.15s}
 #ge-panel button:hover{border-color:var(--cyan)}
 #ge-panel button.on{border-color:var(--green);box-shadow:0 0 10px rgba(55,224,140,.2) inset}
 #ge-panel button small{display:block;font-size:8px;color:var(--dim);letter-spacing:.1em;margin-top:2px}
-.ge-modal{position:fixed;inset:0;background:rgba(3,6,12,.85);backdrop-filter:blur(5px);z-index:2000;display:none;align-items:center;justify-content:center}
-.ge-modal.open{display:flex}
-.ge-box{width:min(920px,94vw);background:var(--panel-solid);border:1px solid var(--line-bright);border-radius:4px;padding:14px;box-shadow:0 30px 90px rgba(0,0,0,.7)}
-.ge-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.ge-head b{font-family:var(--font-d);font-size:14px;letter-spacing:.16em;color:#EAF4FF}
-.ge-head .q-mini{margin-left:auto}
-.ge-head .ge-close{margin-left:8px;color:var(--red);border-color:var(--red)}
-.ge-box iframe{width:100%;aspect-ratio:16/9;border:1px solid var(--line);border-radius:2px;background:#000}
-.cam-paste{display:flex;gap:8px;margin-top:10px}
-.cam-paste input{flex:1;background:rgba(20,36,62,.4);border:1px solid var(--line-bright);color:var(--txt);font-family:var(--font-m);font-size:10.5px;padding:8px 11px;border-radius:2px}
-.ge-cam{width:16px;height:16px;font-size:9px;display:flex;align-items:center;justify-content:center}
 .ge-pop .maplibregl-popup-content{background:var(--panel-solid);color:var(--txt);font-family:var(--font-m);font-size:10px;border:1px solid var(--cyan);border-radius:3px}
 .ge-pop .maplibregl-popup-content b{font-family:var(--font-d);color:#EAF4FF;font-size:12px}
 .ge-pop .maplibregl-popup-tip{border-top-color:var(--cyan)}
+.gev-row{display:flex;gap:6px;margin-bottom:6px}
+#ge-panel .gev-row button,#ge-panel .gev-row a{margin-bottom:0}
+#ge-panel .gev-main{flex:1;border-color:var(--cyan)!important;box-shadow:0 0 12px rgba(53,196,240,.18) inset}
+#ge-panel .gev-mini{width:30px!important;flex:none;text-align:center!important;padding:8px 0!important;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:2px;font-size:11px;color:var(--dim)}
+#ge-panel .gev-mini:hover{border-color:var(--cyan);color:var(--cyan);text-decoration:none}
 /* ---- SOCIAL PULSE ---- */
 .soc-post{display:block;border:1px solid var(--line);border-left:2px solid var(--violet);border-radius:2px;background:var(--panel);padding:9px 11px;margin-bottom:7px;transition:.12s}
 .soc-post:hover{border-color:var(--violet);text-decoration:none}
@@ -553,9 +606,6 @@ button.wt-mkt:hover{border-color:var(--wc);box-shadow:0 0 14px color-mix(in srgb
 #sandbox-note{position:fixed;top:0;left:0;right:0;z-index:3000;background:#2A1A05;border-bottom:1px solid var(--amber);color:var(--amber);font-family:var(--font-m);font-size:10.5px;letter-spacing:.05em;padding:9px 16px;text-align:center}
 #sandbox-note button{margin-left:12px;border:1px solid var(--amber);color:var(--amber);border-radius:2px;padding:2px 8px;font-size:9px}
 /* ---- CAM DIRECTORY ---- */
-#cam-list{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
-.cam-row{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid var(--line);border-radius:2px;padding:7px 10px;font-size:9.5px;letter-spacing:.05em;color:var(--txt)}
-.cam-row.sel{border-color:var(--violet)}
 /* ---- CHART WALL ---- */
 #view-charts{overflow-y:auto}
 #charts-scroll{padding:18px 22px 50px;max-width:1720px;margin:0 auto}
@@ -600,6 +650,50 @@ button.wt-mkt:hover{border-color:var(--wc);box-shadow:0 0 14px color-mix(in srgb
 .ww-row i{height:4px;background:linear-gradient(90deg,var(--amber),var(--red));border-radius:2px;flex:0 1 auto;min-width:3px}
 .ww-row b{font-family:var(--font-d);color:#EAF4FF;margin-left:auto}
 
+
+/* ---- CHOKEPOINT WATCH ---- */
+.cp-lbl{font-family:var(--font-m);font-size:8px;letter-spacing:.08em;color:#5F7592;background:rgba(4,7,14,.72);border:1px solid rgba(31,52,84,.6);border-radius:2px;padding:1px 5px;white-space:nowrap;pointer-events:none}
+.ch-wide{grid-column:1/-1}
+.ch-strip{height:190px!important}
+
+
+/* ---- SYNAPSE ---- */
+.syn-g{font-style:normal;font-weight:700;width:14px;text-align:center}
+.syn-A{color:#37E08C}.syn-B{color:#b8e986}.syn-C{color:#F5B83D}.syn-D{color:#ff9d5c}.syn-F{color:#FF5A66}
+/* ---- SETTLEMENT WATCH ---- */
+#view-settle{overflow-y:auto;background:#05070a}
+#settle-scroll{padding:18px 22px 50px;max-width:1560px;margin:0 auto;color:#c8d3dc}
+.sw-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.sw-head h2{font-family:var(--font-d);font-size:22px;letter-spacing:.22em;color:#c8d3dc}
+.sw-clock{font-size:11px;color:#5c6b78;letter-spacing:.14em}
+.sw-pills{margin-left:auto;display:flex;gap:8px}
+.sw-pill{font-style:normal;font-size:8.5px;letter-spacing:.16em;border:1px solid #5c6b78;color:#5c6b78;border-radius:2px;padding:3px 8px}
+.sw-brief{font-size:10.5px;line-height:1.7;color:#5c6b78;margin:10px 0 4px;max-width:980px}
+.sw-h{font-family:var(--font-d);font-size:11px;letter-spacing:.2em;color:#c8d3dc;margin:20px 0 8px;border-bottom:1px solid #1a2430;padding-bottom:5px}
+.sw-chiprow{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.sw-chip{font-size:8.5px;letter-spacing:.12em;border:1px solid;border-radius:2px;padding:3px 8px;background:#0b0f14}
+.sw-chip b{font-family:var(--font-d)}
+.sw-tapewrap{overflow:hidden;border:1px solid #1a2430;background:#0b0f14;border-radius:3px;height:40px;display:flex;align-items:center}
+.sw-tracks{display:flex;align-items:center;white-space:nowrap;will-change:transform}
+.sw-print{display:inline-flex;align-items:baseline;gap:6px;font-size:10px;margin-right:14px;color:#c8d3dc}
+.sw-print i{font-style:normal;font-size:8px;color:#5c6b78}
+.sw-print em{font-style:normal;color:#ffb454;font-family:var(--font-d)}
+.sw-cap{color:#ff5c5c;text-decoration:none;font-weight:700}
+.sw-status{font-size:9px;letter-spacing:.06em;color:#5c6b78;margin:7px 0 0;line-height:1.6}
+.sw-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.sw-cell{border:1px solid #1a2430;background:#0b0f14;border-radius:3px;padding:10px 13px}
+.sw-cell label{display:block;font-size:7.5px;letter-spacing:.18em;color:#5c6b78}
+.sw-cell b{font-family:var(--font-d);font-size:18px;color:#4dd0e1}
+.sw-row{display:flex;align-items:center;gap:12px;margin:10px 0 0}
+.sw-sevlbl{font-size:8px;letter-spacing:.2em;color:#5c6b78}
+#sw-sev{font-family:var(--font-d);font-size:14px;letter-spacing:.1em}
+.sw-bars{display:flex;gap:6px;align-items:flex-end;height:120px;border:1px solid #1a2430;background:#0b0f14;border-radius:3px;padding:10px 12px;margin-top:8px}
+.sw-bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px}
+.sw-bar i{width:100%;border-radius:2px 2px 0 0;min-height:4px}
+.sw-bar span{font-size:7px;color:#5c6b78;letter-spacing:.06em}
+.sw-foot{font-size:8.5px;letter-spacing:.06em;color:#5c6b78;margin-top:22px;border-top:1px solid #1a2430;padding-top:10px;line-height:1.8}
+@media (prefers-reduced-motion:reduce){.sw-tracks{transform:none!important;flex-wrap:wrap;white-space:normal}}
+
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 @media (max-width:900px){
   #sys-grid{grid-template-columns:1fr}
@@ -629,7 +723,7 @@ button.wt-mkt:hover{border-color:var(--wc);box-shadow:0 0 14px color-mix(in srgb
 
 <header id="hud">
   <div id="brand">
-    <h1>OPHANIM <b>//</b> COMMAND <span class="brand-v">v2.9</span></h1>
+    <h1>OPHANIM <b>//</b> COMMAND <span class="brand-v">v3.5</span></h1>
     <span>GLOBAL FINANCIAL DIGITAL TWIN v1.0</span>
   </div>
   <div id="ticker">
@@ -662,6 +756,7 @@ button.wt-mkt:hover{border-color:var(--wc);box-shadow:0 0 14px color-mix(in srgb
   <button class="mode" data-view="quant">Quant Lab<small>SIGNALS · RISK · PAPER</small></button>
   <button class="mode" data-view="data">Data Hub<small>ECON · NEWS · CHAIN · DEBT</small></button>
   <button class="mode" data-view="charts">Charts<small>WALL OF EVERY MARKET</small></button>
+  <button class="mode" data-view="settle">Settlement<small>SWAPS · CANTON · FAILS</small></button>
 </nav>
 
 <main id="stage">
@@ -720,6 +815,10 @@ button.wt-mkt:hover{border-color:var(--wc);box-shadow:0 0 14px color-mix(in srgb
 
   <section class="view" id="view-charts">
     <div id="charts-scroll"></div>
+  </section>
+
+  <section class="view" id="view-settle">
+    <div id="settle-scroll"></div>
   </section>
 
   <div id="hover-tag"></div>
@@ -1138,7 +1237,7 @@ function setView(v){
   state.view=v;
   $$('.mode').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
   $$('.view').forEach(s=>s.classList.toggle('active',s.id==='view-'+v));
-  $('#status-msg').textContent={system:'God view — all layers online',layers:'Layer isolation mode',globe:'Geospatial command — drag to rotate',network:'Ecosystem network — capital in motion',markets:'Market explorer — the universe of tradable value',feed:'Live markets wall — real-time crypto & FX, refreshing continuously',quant:'Quant Lab — signals, paper portfolio, risk engine (SIMULATION)',data:'Data Hub — live open data: economies, news, on-chain, sovereign debt',charts:'Chart Wall — every market class, live + indicative, one wall'}[v];
+  $('#status-msg').textContent={system:'God view — all layers online',layers:'Layer isolation mode',globe:'Geospatial command — drag to rotate',network:'Ecosystem network — capital in motion',markets:'Market explorer — the universe of tradable value',feed:'Live markets wall — real-time crypto & FX, refreshing continuously',quant:'Quant Lab — signals, paper portfolio, risk engine (SIMULATION)',data:'Data Hub — live open data: economies, news, on-chain, sovereign debt',charts:'Chart Wall — every market class, live + indicative, one wall',settle:'Settlement Watch — swaps tape, Canton pulse, fails x-ray (badged lanes)'}[v];
   if(v==='globe'){ Globe.ensure();
     if(!state._eye){ state._eye=true; setTimeout(()=>{ if(window.Sat&&state.view==='globe') Sat.enter(24,8,3); },250); } }
   if(v==='network') Net.ensure();
@@ -1146,6 +1245,7 @@ function setView(v){
   if(v==='quant'&&window.Quant) Quant.ensure();
   if(v==='data'&&window.Hub) Hub.ensure();
   if(v==='charts'&&window.Charts) Charts.ensure();
+  if(v==='settle'&&window.Settlement) Settlement.ensure();
 }
 
 /* ---------- SYSTEM VIEW ---------- */
@@ -2322,7 +2422,7 @@ window.Sat=(()=>{
     }
     if(engine==='3d'){
       setTimeout(()=>{ map.resize(); map.jumpTo({center:[lon,lat],zoom:z>=10?11:3.1,pitch:0,bearing:0}); },40);
-      if(window.GodsEye) GodsEye.mount(map);
+      if(window.Overwatch) Overwatch.mount(map);
       $('#status-msg').textContent='3D DIGITAL EARTH — drag to spin · scroll to zoom to street level · RIGHT-DRAG or CTRL-DRAG to tilt · click markers for intel';
     } else {
       setTimeout(()=>{ lmap.invalidateSize(); lmap.setView([lat,lon],z||5,{animate:false}); },40);
@@ -2946,6 +3046,260 @@ window.Wall=(()=>{
 })();
 </script>
 <script>
+'use strict';
+/* =====================================================================
+   OPHANIM SYNAPSE v3.1 — ENGINE (verbatim transplant, UI layer excluded)
+   MEDALLION (offense) · ALADDIN (defense) · SYNAPSE (bus)
+   Recovered from session 341c1866 · re-verified before merge.
+   ===================================================================== */
+const OPHX = (() => {
+
+  /* ---------------- SECURITY MASTER (common data language) ---------- */
+  const master = {
+    assets: [
+      { id:'SPX',  name:'S&P 500 Fut',  factor:'EQUITY',    px:5610,  vol:0.16, mu:0.07 },
+      { id:'NDX',  name:'Nasdaq Fut',   factor:'EQUITY',    px:20340, vol:0.22, mu:0.09 },
+      { id:'TLT',  name:'20Y Treasury', factor:'RATES',     px:92.4,  vol:0.14, mu:0.03 },
+      { id:'BTC',  name:'Bitcoin',      factor:'CRYPTO',    px:118250,vol:0.55, mu:0.15 },
+      { id:'GLD',  name:'Gold',         factor:'COMMODITY', px:242.1, vol:0.13, mu:0.05 },
+      { id:'CLF',  name:'WTI Crude',    factor:'COMMODITY', px:78.6,  vol:0.34, mu:0.04 },
+    ],
+    corr: [
+      [1.00, 0.88,-0.30, 0.42, 0.05, 0.28],
+      [0.88, 1.00,-0.35, 0.50, 0.02, 0.22],
+      [-0.30,-0.35,1.00,-0.15, 0.25,-0.10],
+      [0.42, 0.50,-0.15, 1.00, 0.10, 0.15],
+      [0.05, 0.02, 0.25, 0.10, 1.00, 0.20],
+      [0.28, 0.22,-0.10, 0.15, 0.20, 1.00],
+    ],
+    idx(id){ return this.assets.findIndex(a=>a.id===id); },
+    get(id){ return this.assets[this.idx(id)]; },
+    setLive(prices){
+      for(const k in prices){ const a=this.get(k); if(a) a.px=prices[k]; }
+    }
+  };
+
+  /* ---------------- PORTFOLIO (paper, $1M — The Reckoning-aligned) -- */
+  const portfolio = {
+    nav: 1_000_000,
+    positions: { SPX: 60_000, NDX: 45_000, TLT: 80_000, BTC: 30_000, GLD: 50_000, CLF: 0 },
+    weights(){ const w = master.assets.map(a => (this.positions[a.id]||0)/this.nav); return w; }
+  };
+
+  /* ---------------- MATH CORE -------------------------------------- */
+  function rng(seed){ let t = seed>>>0; return () => {
+    t += 0x6D2B79F5; let r = Math.imul(t ^ t>>>15, 1|t);
+    r ^= r + Math.imul(r ^ r>>>7, 61|r); return ((r ^ r>>>14)>>>0)/4294967296;
+  };}
+  function gauss(rand){
+    let u=0,v=0; while(u===0)u=rand(); while(v===0)v=rand();
+    return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+  }
+  function cholesky(M){
+    const n=M.length, L=M.map(()=>new Array(n).fill(0));
+    for(let i=0;i<n;i++) for(let j=0;j<=i;j++){
+      let s=0; for(let k=0;k<j;k++) s+=L[i][k]*L[j][k];
+      L[i][j] = i===j ? Math.sqrt(Math.max(M[i][i]-s,1e-12)) : (M[i][j]-s)/L[j][j];
+    }
+    return L;
+  }
+  function percentile(sorted,p){ const i=Math.min(sorted.length-1,Math.max(0,Math.floor(p*sorted.length))); return sorted[i]; }
+
+  /* ---------------- ALADDIN CORE: Monte Carlo engine ----------------- */
+  function runMonteCarlo({paths=10000, horizon=10, seed=42, positionsOverride=null}={}) {
+    const A = master.assets, n = A.length;
+    const pos = positionsOverride || portfolio.positions;
+    const notional = A.map(a => pos[a.id]||0);
+    const L = cholesky(master.corr);
+    const dt = 1/252, rand = rng(seed);
+    const pnls = new Float64Array(paths);
+    const facPnl = {};
+    A.forEach(a => { if(!facPnl[a.factor]) facPnl[a.factor]=new Float64Array(paths); });
+
+    const z = new Array(n), e = new Array(n);
+    for(let p=0;p<paths;p++){
+      const logRet = new Array(n).fill(0);
+      for(let d=0;d<horizon;d++){
+        for(let i=0;i<n;i++) z[i]=gauss(rand);
+        for(let i=0;i<n;i++){ let s=0; for(let k=0;k<=i;k++) s+=L[i][k]*z[k]; e[i]=s; }
+        for(let i=0;i<n;i++){
+          const a=A[i];
+          logRet[i] += (a.mu-0.5*a.vol*a.vol)*dt + a.vol*Math.sqrt(dt)*e[i];
+        }
+      }
+      let pnl=0;
+      for(let i=0;i<n;i++){
+        const dP = notional[i]*(Math.exp(logRet[i])-1);
+        pnl += dP; facPnl[A[i].factor][p]+=dP;
+      }
+      pnls[p]=pnl;
+    }
+    const sorted = Array.from(pnls).sort((a,b)=>a-b);
+    const var95 = -percentile(sorted,0.05);
+    const var99 = -percentile(sorted,0.01);
+    const tail  = sorted.slice(0, Math.max(1,Math.floor(sorted.length*0.025)));
+    const es    = -tail.reduce((s,x)=>s+x,0)/tail.length;
+    const cutoff = percentile(sorted,0.05);
+    const facVar = {};
+    for(const f in facPnl){
+      let s=0,c=0;
+      for(let p=0;p<paths;p++) if(pnls[p]<=cutoff){ s+=facPnl[f][p]; c++; }
+      facVar[f] = c? -s/c : 0;
+    }
+    return { sorted, var95, var99, es, facVar, paths, horizon };
+  }
+
+  /* ---------------- MEDALLION AUDIT: signal grading ------------------ */
+  const signals = [
+    { id:'MOM-XSEC',  name:'Cross-Sect Momentum', trades:[] },
+    { id:'MR-ZBAND',  name:'Z-Band Mean Revert',  trades:[] },
+    { id:'CARRY-RV',  name:'Carry / Rel Value',   trades:[] },
+    { id:'FLOW-IMB',  name:'Flow Imbalance',      trades:[] },
+  ];
+  function wilsonLB(wins, n, z=1.96){
+    if(n===0) return 0;
+    const p=wins/n, d=1+z*z/n;
+    return (p + z*z/(2*n) - z*Math.sqrt((p*(1-p)+z*z/(4*n))/n))/d;
+  }
+  function auditSignal(sig){
+    const t=sig.trades, n=t.length;
+    const wins=t.filter(x=>x.pnl>0), losses=t.filter(x=>x.pnl<=0);
+    const gp=wins.reduce((s,x)=>s+x.pnl,0), gl=Math.abs(losses.reduce((s,x)=>s+x.pnl,0));
+    const hit=n?wins.length/n:0;
+    const pf = gl>0 ? gp/gl : (gp>0? Infinity:0);
+    const expct = n? (gp-gl)/n : 0;
+    const wlb = wilsonLB(wins.length,n);
+    let decay=0;
+    if(n>=10){ const h=Math.floor(n/2);
+      const older=t.slice(0,h), recent=t.slice(h);
+      decay = recent.filter(x=>x.pnl>0).length/recent.length
+            - older.filter(x=>x.pnl>0).length/older.length;
+    }
+    let score = wlb*100 + Math.min(pf,3)*10 + decay*40;
+    let grade = score>=80?'A':score>=65?'B':score>=50?'C':score>=35?'D':'F';
+    if(n<8) grade = n===0?'F':'C';
+    const weight = Math.max(0, Math.min(1, (wlb-0.35)*2.2 + Math.max(0,decay)));
+    return { id:sig.id, name:sig.name, n, hit, pf, expct, wlb, decay, grade, weight };
+  }
+  function runAudit(){ return signals.map(auditSignal); }
+  function recordOutcome(sigId, pnl){
+    const s=signals.find(x=>x.id===sigId); if(s) s.trades.push({pnl, t:Date.now()});
+  }
+
+  /* ---------------- SYNAPSE BUS: the sync layer ---------------------- */
+  const limits = {
+    portfolioVar95Max: 0.045 * portfolio.nav,
+    marginalVarMax:    0.010 * portfolio.nav,
+    factorConcMax:     0.55,
+    minWeight:         0.15
+  };
+  const ledger = [];
+  let lastMC = null;
+
+  function propose(sigId, assetId, side, baseNotional, seed){
+    const audit = auditSignal(signals.find(s=>s.id===sigId));
+    const asset = master.get(assetId);
+    const reasons = [];
+    if(audit.weight < limits.minWeight){
+      const rec = { sigId, assetId, side, notional:0, verdict:'VETOED', audit,
+        reasons:[`MEDALLION: weight ${(audit.weight).toFixed(2)} < floor ${limits.minWeight} (grade ${audit.grade}, n=${audit.n})`],
+        marginalVar:0, open:false, t:Date.now() };
+      ledger.unshift(rec); return rec;
+    }
+    let notional = Math.round(baseNotional * audit.weight) * (side==='SELL'?-1:1);
+    const mcSeed = seed ?? (Date.now()%100000);
+    const base = runMonteCarlo({paths:3000, seed:mcSeed});
+    const posAfter = Object.assign({}, portfolio.positions);
+    posAfter[assetId] = (posAfter[assetId]||0) + notional;
+    const after = runMonteCarlo({paths:3000, seed:mcSeed, positionsOverride:posAfter});
+    const mVar = after.var95 - base.var95;
+
+    let verdict='APPROVED';
+    if(after.var95 > limits.portfolioVar95Max){
+      verdict='VETOED';
+      reasons.push(`ALADDIN: post-trade VaR95 $${fmt(after.var95)} > limit $${fmt(limits.portfolioVar95Max)}`);
+    } else if(mVar > limits.marginalVarMax){
+      const scale = Math.max(0.1, limits.marginalVarMax/Math.max(mVar,1));
+      notional = Math.round(notional*scale);
+      verdict='SCALED';
+      reasons.push(`ALADDIN: marginal VaR $${fmt(mVar)} > $${fmt(limits.marginalVarMax)} — scaled ×${scale.toFixed(2)}`);
+    }
+    const totFac = Object.values(after.facVar).reduce((s,x)=>s+Math.max(x,0),0)||1;
+    const share = Math.max(after.facVar[asset.factor]||0,0)/totFac;
+    if(verdict!=='VETOED' && share > limits.factorConcMax){
+      verdict='VETOED';
+      reasons.push(`ALADDIN: ${asset.factor} = ${(share*100).toFixed(0)}% of tail risk > ${(limits.factorConcMax*100)}% cap`);
+    }
+    if(verdict==='APPROVED') reasons.push(`ALADDIN: marginal VaR $${fmt(mVar)} within limits · MEDALLION weight ${(audit.weight).toFixed(2)} (${audit.grade})`);
+    if(verdict!=='VETOED'){ portfolio.positions[assetId]=(portfolio.positions[assetId]||0)+notional; }
+    const rec={ sigId, assetId, side, notional, verdict, audit, reasons, marginalVar:mVar, open:verdict!=='VETOED', t:Date.now() };
+    ledger.unshift(rec); lastMC=after; return rec;
+  }
+
+  function resolveOpen(rand){
+    const r = rand || Math.random;
+    let resolved=0;
+    for(const rec of ledger){
+      if(!rec.open) continue;
+      const a=master.get(rec.assetId);
+      const edge = (rec.audit.weight-0.4)*0.004;
+      const ret = edge + (gauss(r))* a.vol*Math.sqrt(10/252);
+      const pnl = rec.notional * ret;
+      recordOutcome(rec.sigId, pnl);
+      rec.open=false; rec.outcomePnl=pnl; resolved++;
+      portfolio.positions[rec.assetId]-=rec.notional;
+    }
+    return resolved;
+  }
+
+  /* ---------------- SELF TEST (jsdom harness entry) ------------------ */
+  function selfTest(){
+    const out=[];
+    const ok=(name,cond)=>out.push({name,pass:!!cond});
+    const L=cholesky(master.corr); let maxErr=0;
+    for(let i=0;i<L.length;i++)for(let j=0;j<L.length;j++){
+      let s=0;for(let k=0;k<L.length;k++)s+=L[i][k]*L[j][k];
+      maxErr=Math.max(maxErr,Math.abs(s-master.corr[i][j]));
+    }
+    ok('cholesky reconstructs corr (<1e-9)', maxErr<1e-9);
+    const mc=runMonteCarlo({paths:2000,seed:7});
+    ok('MC produced full path count', mc.sorted.length===2000);
+    ok('VaR99 >= VaR95 > 0', mc.var99>=mc.var95 && mc.var95>0);
+    ok('ES >= VaR97.5 region sane', mc.es>=mc.var95);
+    ok('factor VaR keys present', Object.keys(mc.facVar).length>=3);
+    const mc2=runMonteCarlo({paths:2000,seed:7});
+    ok('deterministic under fixed seed', Math.abs(mc2.var95-mc.var95)<1e-9);
+    const s=signals[0]; s.trades=[];
+    for(let i=0;i<20;i++) recordOutcome(s.id, i%3===0? -400: 600);
+    const a=auditSignal(s);
+    ok('audit hit-rate correct', Math.abs(a.hit-13/20)<1e-9);
+    ok('audit grade computed', 'ABCDF'.includes(a.grade));
+    const weak=signals[3]; weak.trades=[];
+    for(let i=0;i<12;i++) recordOutcome(weak.id, -500);
+    const vRec=propose(weak.id,'BTC','BUY',120000, 11);
+    ok('weak signal vetoed by Medallion gate', vRec.verdict==='VETOED' && vRec.notional===0);
+    const pRec=propose(s.id,'GLD','BUY',40000, 13);
+    ok('strong signal produced verdict + reasons', ['APPROVED','SCALED'].includes(pRec.verdict) && pRec.reasons.length>0);
+    const big=propose(s.id,'BTC','BUY',900000, 17);
+    ok('oversized trade scaled or vetoed by Aladdin', big.verdict==='SCALED'||big.verdict==='VETOED');
+    const nBefore=signals[0].trades.length;
+    resolveOpen(rng(99));
+    ok('outcome feedback reached Medallion', signals[0].trades.length>nBefore);
+    return out;
+  }
+
+  function fmt(x){ return Math.round(Math.abs(x)).toLocaleString('en-US'); }
+
+  return { master, portfolio, signals, limits, ledger,
+           runMonteCarlo, runAudit, auditSignal, recordOutcome,
+           propose, resolveOpen, selfTest, _math:{cholesky,rng,gauss,wilsonLB}, fmt,
+           get lastMC(){return lastMC;} };
+})();
+window.OPHX = OPHX;
+
+</script>
+
+<script>
 /* ============================================================
    QUANT LAB — signals · paper portfolio · risk orchestration
    Medallion-style factor logic on real market data, wrapped in
@@ -2955,6 +3309,40 @@ window.Quant=(()=>{
   const root=$('#quant-scroll');
   const START=1e6;
   let inited=false, coins=[], cash=START, positions={}, tradeLog=[], sigRows=[], peak=START, ticketSel=null;
+  /* ---- AUTOGNOSIS: grade yesterday's factor calls against realized moves, reweight within bounds ---- */
+  const ST=window.Store||{get:(k,d)=>d,set:()=>{},persistent:()=>false};
+  const LEARN=(()=>{ const d=ST.get('quant:learn',null);
+    return (d&&d.weights)?{weights:d.weights,stats:d.stats,graded:d.graded||0,prev:null}
+      :{weights:{mom:.42,mom72:.23,mr:.20,vbk:.15},stats:{mom:{h:1,t:2},mom72:{h:1,t:2},mr:{h:1,t:2},vbk:{h:1,t:2}},graded:0,prev:null};
+  })();
+  function gradeAndLearn(){
+    const prev=LEARN.prev; if(!prev||!prev.length) return;
+    let g=0;
+    for(const p of prev){
+      const c=coins.find(x=>x.id===p.id); if(!c) continue;
+      const real=Math.sign(c.current_price-p.price); if(!real) continue;
+      for(const f in p.calls){ const call=p.calls[f]; if(!call) continue;
+        const st=LEARN.stats[f]; st.h=st.h*0.98+(call===real?1:0); st.t=st.t*0.98+1; g++; }
+    }
+    if(!g) return;
+    LEARN.graded+=g;
+    const base={mom:.42,mom72:.23,mr:.20,vbk:.15}; const raw={}; let sum=0;
+    for(const f in base){ const st=LEARN.stats[f]; const acc=st.h/Math.max(st.t,1e-6); raw[f]=base[f]*(0.5+acc); sum+=raw[f]; }
+    for(const f in raw){ LEARN.weights[f]=Math.min(0.6,Math.max(0.05,raw[f]/sum)); }
+    ST.set('quant:learn',{weights:LEARN.weights,stats:LEARN.stats,graded:LEARN.graded});
+  }
+  /* ---- external signal candidates: observed & outcome-graded, NOT blended into the score ---- */
+  const CANDS={};
+  function registerCandidate(id,def){ if(!CANDS[id]){ CANDS[id]={id,label:def.label||id,value:def.value,dir:def.dir,prevDir:0,acc:ST.get('quant:cand:'+id,{h:1,t:2})}; } }
+  function gradeCandidates(){
+    const btcPrev=LEARN.prev&&LEARN.prev.find(p=>{const c=coins.find(x=>x.id===p.id);return c&&c.symbol==='btc';});
+    const c=btcPrev&&coins.find(x=>x.id===btcPrev.id);
+    const real=c?Math.sign(c.current_price-btcPrev.price):0;
+    for(const k in CANDS){ const cd=CANDS[k];
+      if(cd.prevDir&&real){ cd.acc.h=cd.acc.h*0.98+(cd.prevDir===real?1:0); cd.acc.t=cd.acc.t*0.98+1; ST.set('quant:cand:'+k,cd.acc); }
+      try{ cd.prevDir=cd.dir()||0; }catch(_){ cd.prevDir=0; }
+    }
+  }
 
   const F$=v=>'$'+Math.round(v).toLocaleString('en-US');
   const P2=v=>(v>=0?'+':'')+v.toFixed(2)+'%';
@@ -2965,6 +3353,9 @@ window.Quant=(()=>{
 
   /* ================= SIGNAL ENGINE ================= */
   function computeSignals(){
+    gradeAndLearn();
+    gradeCandidates();
+    const __snap=[];
     sigRows=coins.map(c=>{
       const p=c.sparkline_in_7d&&c.sparkline_in_7d.price;
       if(!p||p.length<80) return {id:c.id,sym:c.symbol.toUpperCase(),name:c.name,price:c.current_price,
@@ -2981,10 +3372,12 @@ window.Quant=(()=>{
       const rsi=100-100/(1+(g/(l||1e-9)));
       const hi=Math.max(...p), lo=Math.min(...p);
       const brk=p[n-1]>hi*0.995?1:(p[n-1]<lo*1.005?-1:0);
-      const score=0.42*Math.tanh(mom24/(volD||1e-9))
-                 +0.23*Math.tanh(mom72/((volD*1.7)||1e-9))
-                 -0.20*Math.tanh(zMR/2)
-                 +0.15*brk*Math.min(vr,2)/2;
+      const W=LEARN.weights;
+      const score=W.mom*Math.tanh(mom24/(volD||1e-9))
+                 +W.mom72*Math.tanh(mom72/((volD*1.7)||1e-9))
+                 -W.mr*Math.tanh(zMR/2)
+                 +W.vbk*brk*Math.min(vr,2)/2;
+      __snap.push({id:c.id,price:c.current_price,calls:{mom:Math.sign(mom24),mom72:Math.sign(mom72),mr:Math.sign(-zMR),vbk:brk}});
       const prob=1/(1+Math.exp(-2.4*score));
       const edges=[];
       if(Math.abs(mom24/volD)>0.8) edges.push(mom24>0?'MOM+':'MOM−');
@@ -2996,6 +3389,7 @@ window.Quant=(()=>{
               vol:c.total_volume,score,prob,dir,edges,volD,r};
     }).filter(Boolean);
     sigRows.sort((a,b)=>b.score-a.score);
+    LEARN.prev=__snap;
   }
 
   /* ================= PORTFOLIO ================= */
@@ -3045,6 +3439,7 @@ window.Quant=(()=>{
   }
   function preTrade(row,side,usd){
     if(!(usd>0)) return {ok:false,why:'ENTER A VALID $ SIZE'};
+    if(window.SW_FEED_VETO&&window.Settlement){ const sv=Settlement.stress(); if(sv.tier==='STRESS'||sv.tier==='CRITICAL') return {ok:false,why:'MARKET-STRESS VETO — CNS fails severity '+sv.tier+' (z='+sv.z+') · flag-gated input (SW_FEED_VETO)'}; }
     const eq=equity(), price=row.price;
     const cur=positions[row.sym]?positions[row.sym].qty*price:0;
     const post=cur+side*usd;
@@ -3059,6 +3454,11 @@ window.Quant=(()=>{
     return {ok:true,price};
   }
   function trade(row,side,usd){
+    if(window.SynapseBridge&&window.OPHX){
+      const g=SynapseBridge.gate(row,side,usd);
+      if(!g.ok){ toast('❌ SYNAPSE VETO — '+(g.why||'').slice(0,120),'#FF5A66'); return; }
+      if(g.scaledUsd&&g.scaledUsd<usd){ usd=g.scaledUsd; toast('⚖ SYNAPSE SCALED → $'+Math.round(usd).toLocaleString(),'#F5B83D'); }
+    }
     const chk=preTrade(row,side,usd);
     if(!chk.ok){ toast('❌ RISK ENGINE VETO — '+chk.why,'#FF5A66'); return; }
     const qty=side*usd/chk.price, P=positions[row.sym];
@@ -3072,7 +3472,7 @@ window.Quant=(()=>{
         else if(Math.sign(nq)!==Math.sign(P.qty)) P.entry=chk.price;
         P.qty=nq;
       }
-    } else { positions[row.sym]={id:row.id,sym:row.sym,qty,entry:chk.price}; cash-=qty*chk.price; }
+    } else { positions[row.sym]={id:row.id,sym:row.sym,qty,entry:chk.price,sig:(window.SynapseBridge?SynapseBridge.lastSig():null)}; cash-=qty*chk.price; }
     tradeLog.unshift({t:new Date().toLocaleTimeString('en-GB'),sym:row.sym,side:side>0?'BUY':'SELL',usd,price:chk.price});
     tradeLog=tradeLog.slice(0,8);
     toast('✅ FILLED — '+(side>0?'BUY ':'SELL ')+F$(usd)+' '+row.sym+' @ '+qpx(chk.price),'#37E08C');
@@ -3081,6 +3481,7 @@ window.Quant=(()=>{
   function closePos(sym){
     const P=positions[sym]; if(!P) return;
     const m=markPx(P.id)??P.entry;
+    const __pnl=(m-P.entry)*P.qty; if(window.SynapseBridge&&P.sig) SynapseBridge.close(sym,P.sig,__pnl);
     cash+=P.qty*m;
     tradeLog.unshift({t:new Date().toLocaleTimeString('en-GB'),sym,side:'CLOSE',usd:Math.abs(P.qty*m),price:m});
     delete positions[sym];
@@ -3158,6 +3559,17 @@ window.Quant=(()=>{
         ${tradeLog.length?`<div class="q-log">${tradeLog.map(l=>`<span>${l.t} · <b>${l.side}</b> ${F$(l.usd)} ${l.sym} @ ${qpx(l.price)}</span>`).join('')}</div>`:''}
         <div class="q-io"><button id="q-export" class="q-mini">⬇ EXPORT BOOK</button><label class="q-mini" style="cursor:pointer">⬆ IMPORT<input id="q-import" type="file" accept=".json" style="display:none"></label><button id="q-reset" class="q-mini" style="color:var(--red)">RESET $1M</button></div>
 
+        ${window.OPHX?(()=>{try{const AU=OPHX.runAudit();const mc=window.SynapseBridge?SynapseBridge.lastFullMC():OPHX.lastMC;const ci=window.SynapseBridge?SynapseBridge.corrInfo():{basis:'—'};const LP=window.SynapseBridge?SynapseBridge.limitsPct():{var95Pct:.045,mVarPct:.01};const led=OPHX.ledger.slice(0,8);
+return `<h4 class="mkt-h4">SYNAPSE — MEDALLION AUDIT × ALADDIN CORE</h4>
+<div class="q-limits">${AU.map(a=>`<div class="q-limit ${a.weight>=OPHX.limits.minWeight?'pass':'fail'}"><i class="syn-g syn-${a.grade}">${a.grade}</i><span>${a.id} · N ${a.n} · HIT ${(a.hit*100).toFixed(0)}% · WILSON ${(a.wlb*100).toFixed(0)}% · PF ${a.pf===Infinity?'∞':a.pf.toFixed(2)} · DECAY ${(a.decay*100).toFixed(0)}%</span><b>MED W ${(a.weight*100).toFixed(0)}%</b></div>`).join('')}</div>
+<p class="q-note">Medallion weight sizes proposals (floor ${(OPHX.limits.minWeight*100).toFixed(0)}%) — AUTOGNOSIS runs in shadow below for comparison. CORR ${ci.basis}${ci.shrunk?' · PSD-shrunk':''} · LIMITS VaR95 ${(LP.var95Pct*100).toFixed(1)}% / mVaR ${(LP.mVarPct*100).toFixed(1)}% NAV · paired 3k-path sims per proposal.</p>
+<div class="q-limits"><div class="q-limit pass"><i>◬</i><span>${mc?`VaR95 $${OPHX.fmt(mc.var95)} · VaR99 $${OPHX.fmt(mc.var99)} · ES $${OPHX.fmt(mc.es)} · ${mc.paths.toLocaleString()} PATHS`:'MONTE CARLO — not yet run this session'}</span><b><button id="q-syn-mc" class="q-mini">RUN 10K MC</button></b></div></div>
+${mc?`<div class="q-limits">${Object.entries(mc.facVar).sort((x,y)=>y[1]-x[1]).map(([f,v])=>{const tot=Object.values(mc.facVar).reduce((s2,x)=>s2+Math.max(x,0),0)||1;return `<div class="q-limit pass"><i>▮</i><span>${f}</span><b>${(Math.max(v,0)/tot*100).toFixed(0)}% OF TAIL</b></div>`;}).join('')}</div>`:''}
+${led.length?`<div class="q-limits">${led.map(r=>`<div class="q-limit ${r.verdict==='VETOED'?'fail':'pass'}"><i>${r.verdict==='VETOED'?'✘':r.verdict==='SCALED'?'⚖':'✔'}</i><span>${r.verdict} · ${r.side} ${r.assetId} $${OPHX.fmt(r.notional||0)}${r.outcomePnl!==undefined?' · P&L '+(r.outcomePnl>=0?'+':'−')+'$'+OPHX.fmt(r.outcomePnl):''}</span><b>${((r.reasons&&r.reasons[0])||'').slice(0,44)}</b></div>`).join('')}</div>`:`<p class="q-note">Decision ledger empty — SYNAPSE gates the next trade on a mastered asset.</p>`}`;}catch(e){return '';}})():''}
+<h4 class="mkt-h4">AUTOGNOSIS — SELF-LEARNING SIGNAL WEIGHTS</h4>
+        <div class="q-limits">${['mom','mom72','mr','vbk'].map(f=>{const st=LEARN.stats[f];const acc=st.t?st.h/st.t:0;const nm={mom:'MOMENTUM 24H',mom72:'MOMENTUM 72H',mr:'MEAN REVERSION',vbk:'VOL BREAKOUT'}[f];return `<div class="q-limit pass"><i>◈</i><span>${nm} · ACC ${(acc*100).toFixed(0)}%</span><b>W ${(LEARN.weights[f]*100).toFixed(0)}%</b></div>`;}).join('')}</div>
+        <p class="q-note">The engine grades its own prior calls against realized 1h moves (${LEARN.graded.toLocaleString()} factor-calls graded, exp-decay memory) and reweights within 5–60% bounds. ${(window.Store&&Store.persistent())?'Learned state persists in this browser.':'Preview sandbox: learning resets on reload — persists once on GitHub Pages or opened directly.'} Adaptive heuristics, not validated alpha.</p>
+        ${Object.keys(CANDS).length?`<div class="q-limits" style="margin-top:6px">${Object.values(CANDS).map(cd=>{let v=null;try{v=cd.value();}catch(_){ } const acc=cd.acc.t?cd.acc.h/cd.acc.t:0; return `<div class="q-limit pass"><i>⚓</i><span>${cd.label} · CANDIDATE${v==null?' · NO SIGNAL (learning/degraded)':''}</span><b>${v==null?'—':(v>=0?'+':'')+v.toFixed(2)} · ACC ${(acc*100).toFixed(0)}%</b></div>`;}).join('')}</div><p class="q-note">Candidates are observed and outcome-graded vs BTC 1h — displayed, never blended into the engine score.</p>`:''}
         <h4 class="mkt-h4">RISK LIMITS — ALADDIN-STYLE GUARDRAILS</h4>
         <div class="q-limits">${checks.map(c=>`<div class="q-limit ${c[2]?'pass':'fail'}"><i>${c[2]?'✔':'✘'}</i><span>${c[0]}</span><b>${c[1]}</b></div>`).join('')}</div>
 
@@ -3214,10 +3626,11 @@ window.Quant=(()=>{
     }},12000);
     Wall.ensure();
     Wall.onData(cs=>{ coins=cs; computeSignals(); if(state.view==='quant') render(); });
+    document.addEventListener('click',e=>{ if(e.target&&e.target.id==='q-syn-mc'&&window.SynapseBridge){ e.target.textContent='RUNNING…'; SynapseBridge.runFullMC(()=>{ if(state.view==='quant') render(); }); } });
     const c0=Wall.getCoins();
     if(c0&&c0.length){ coins=c0; computeSignals(); render(); }
   }
-  return {ensure};
+  return {ensure,registerCandidate,candidates:()=>CANDS,equityNow:()=>equity(),bookPositions:()=>positions,learnState:()=>({weights:{...LEARN.weights},graded:LEARN.graded}),__cycle:cs=>{coins=cs;computeSignals();}};
 })();
 </script>
 <script>
@@ -3578,229 +3991,103 @@ window.Hub=(()=>{
 </script>
 <script>
 /* ============================================================
-   GOD'S EYE — live overwatch layers on the 3D digital earth
-   🛰 SATELLITES: Celestrak TLEs propagated in real time (SGP4)
-   ✈ AIRCRAFT: OpenSky Network live transponders (keyless)
-   🚢 SHIPS: aisstream.io live AIS (free key)
-   👁 STREET VIEW: embedded in-app (Google svembed)
-   📷 LIVE CAMS: in-app player (NASA ISS + any YouTube live)
+   OVERWATCH — globe layer control + GOD'S EYE VIEW launcher
+   👁 GOD'S EYE VIEW: Bilawal Sidhu's open-source 3D intelligence
+      globe (MIT, github.com/bilawalsidhu/gods-eye-view), running
+      on this PC via Pinokio. Opens at the spot you're looking at.
+   🚢 AIS FEED: headless aisstream.io socket feeding Chokepoint
+      Watch (no dots drawn — God's Eye View shows the ships).
+   Replaces the v2.x–3.4 built-in God's Eye (sats/air/ships/
+   street view/cams), retired in favour of God's Eye View.
    ============================================================ */
-window.GodsEye=(()=>{
+window.Overwatch=(()=>{
   let map=null, mounted=false;
-  const st={sats:false,air:false,ships:false,street:false,ww:true};
-  let satrecs=[], satTimer=null, airTimer=null, shipWS=null, shipKey=null;
-  const ships=new Map();
-  const esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-
-  const CAMS=[
-    ['ISS LIVE — NASA','Low Earth Orbit',29.559,-95.090,{type:'channel',id:'UCLA_DiR1FfKNvjuUpBHmylQ'}],
-    ['Times Square','New York',40.758,-73.985,null],
-    ['Wall Street / NYSE','New York',40.707,-74.011,null],
-    ['Shibuya Crossing','Tokyo',35.659,139.700,null],
-    ['Tower Bridge','London',51.505,-0.075,null],
-    ['Marina','Dubai',25.080,55.140,null],
-    ['Marina Bay','Singapore',1.284,103.860,null],
-    ['St. Mark\u2019s','Venice',45.434,12.339,null]
-  ];
+  const st={ww:true,cp:true,dc:true,ais:false};
+  let ws=null, key=null, retryT=null, backoff=2000, count=0, lastMsg=0;
+  const GEV_REPO='https://github.com/bilawalsidhu/gods-eye-view';
+  const GEV_PINOKIO='https://pinokio.co/apps/github-com-bilawalsidhu-gods-eye-view';
 
   function status(id,msg,ok){ const el=$('#ges-'+id); if(el){ el.textContent=msg; el.style.color=ok?'var(--green)':'var(--dim)'; } }
-  function srcSet(id,features){
-    const s=map.getSource(id);
-    const fc={type:'FeatureCollection',features};
-    if(s) s.setData(fc);
-    else try{
-      map.addSource(id,{type:'geojson',data:fc});
-      const paint=id==='ge-sats'
-        ?{'circle-radius':['case',['get','iss'],5,2.6],'circle-color':['get','c'],'circle-opacity':.95,'circle-stroke-width':.7,'circle-stroke-color':'#04070E'}
-        :id==='ge-air'
-        ?{'circle-radius':3,'circle-color':['interpolate',['linear'],['get','alt'],0,'#F5B83D',6000,'#37E08C',11000,'#35C4F0'],'circle-opacity':.9}
-        :{'circle-radius':3.2,'circle-color':'#F58B3D','circle-opacity':.95,'circle-stroke-width':.6,'circle-stroke-color':'#04070E'};
-      map.addLayer({id,type:'circle',source:id,paint});
-      map.on('click',id,e=>{
-        const p=e.features[0].properties;
-        new maplibregl.Popup({closeButton:true,className:'ge-pop'}).setLngLat(e.lngLat)
-          .setHTML(`<b>${esc(p.name)}</b><br><span>${esc(p.sub||'')}</span>`).addTo(map);
-      });
-      map.on('mouseenter',id,()=>map.getCanvas().style.cursor='pointer');
-      map.on('mouseleave',id,()=>map.getCanvas().style.cursor='');
-    }catch(_){}
-  }
 
-  /* ================= SATELLITES ================= */
-  async function loadTLEs(){
-    status('sats','FETCHING ORBITAL ELEMENTS (CELESTRAK)…');
-    const groups=[['stations','#35C4F0'],['gps-ops','#C9F53D']];
-    satrecs=[];
-    for(const [g,color] of groups){
-      try{
-        const txt=await fetch('https://celestrak.org/NORAD/elements/gp.php?GROUP='+g+'&FORMAT=tle').then(r=>r.text());
-        const lines=txt.split('\n').map(l=>l.replace('\r','')).filter(l=>l.trim());
-        for(let i=0;i+2<lines.length+1&&i+2<=lines.length;i+=3){
-          const name=lines[i].trim(), l1=lines[i+1], l2=lines[i+2];
-          if(!l1||!l2||l1[0]!=='1'||l2[0]!=='2') continue;
-          try{ satrecs.push({name,rec:satellite.twoline2satrec(l1,l2),c:color,iss:/ISS \(ZARYA\)/.test(name)}); }catch(_){}
-          if(satrecs.length>=120) break;
-        }
-      }catch(e){}
-    }
-    if(!satrecs.length){
-      status('sats','CELESTRAK BLOCKED — TRYING MIRROR (TLE API)…');
-      try{
-        const j=await fetch('https://tle.ivanstanojevic.me/api/tle?page-size=100').then(r=>r.json());
-        (j.member||[]).forEach(m=>{ try{ satrecs.push({name:m.name,rec:satellite.twoline2satrec(m.line1,m.line2),c:'#35C4F0',iss:/ISS/.test(m.name)}); }catch(_){}} );
-      }catch(e){}
-    }
-    if(!satrecs.length){ status('sats','ORBIT FEEDS UNREACHABLE — previews block these; open the file directly in your browser.'); return; }
-    status('sats',satrecs.length+' SATELLITES TRACKED — POSITIONS COMPUTED LIVE (SGP4)',1);
-    tickSats();
-    satTimer=setInterval(tickSats,1000);
+  /* ================= GOD'S EYE VIEW launcher ================= */
+  function gevBase(){ return String(Store.get('gev.url','')||'').trim(); }
+  function normBase(u){
+    u=String(u||'').trim(); if(!u) return '';
+    if(!/^https?:\/\//i.test(u)) u='http://'+u;
+    try{ const x=new URL(u); return x.origin+x.pathname.replace(/\/+$/,'')+'/'; }catch(_){ return ''; }
   }
-  function tickSats(){
-    if(!st.sats||!map) return;
-    const now=new Date(), gmst=satellite.gstime(now), feats=[];
-    for(const s of satrecs){
-      try{
-        const pv=satellite.propagate(s.rec,now);
-        if(!pv.position) continue;
-        const gd=satellite.eciToGeodetic(pv.position,gmst);
-        feats.push({type:'Feature',geometry:{type:'Point',coordinates:[satellite.degreesLong(gd.longitude),satellite.degreesLat(gd.latitude)]},
-          properties:{name:s.name,sub:'ALT '+Math.round(gd.height)+' KM · REAL ORBIT (SGP4 FROM CELESTRAK TLE)',c:s.c,iss:!!s.iss}});
-      }catch(_){}
-    }
-    srcSet('ge-sats',feats);
+  /* MapLibre zoom → camera altitude (m) for God's Eye View's #lat=&lon=&alt= link */
+  function altFromZoom(z){ return Math.round(Math.max(300, Math.min(2e7, 4e7/Math.pow(2,z||3)))); }
+  function gevLink(base,view){
+    if(!view) return base;
+    return base+'#lat='+view.lat.toFixed(4)+'&lon='+view.lon.toFixed(4)+'&alt='+altFromZoom(view.zoom)+'&heading=0&pitch=-45';
   }
-  function toggleSats(on){
-    if(on){
-      if(typeof satellite==='undefined'){ status('sats','ORBIT ENGINE STILL LOADING — try again in a moment'); st.sats=false; return; }
-      if(!satrecs.length) loadTLEs(); else { status('sats',satrecs.length+' SATELLITES TRACKED',1); satTimer=setInterval(tickSats,1000); tickSats(); }
-    } else { clearInterval(satTimer); srcSet('ge-sats',[]); status('sats','OFF'); }
-  }
-
-  /* ================= AIRCRAFT ================= */
-  async function tickAir(){
-    if(!st.air||!map) return;
-    if(map.getZoom()<3.2){ status('air','ZOOM INTO A REGION TO SCAN (OPENSKY, MIN ZOOM 3.2)'); srcSet('ge-air',[]); return; }
-    const b=map.getBounds();
-    status('air','SCANNING TRANSPONDERS…');
-    try{
-      const u=`https://opensky-network.org/api/states/all?lamin=${b.getSouth().toFixed(2)}&lomin=${b.getWest().toFixed(2)}&lamax=${b.getNorth().toFixed(2)}&lomax=${b.getEast().toFixed(2)}`;
-      const j=await fetch(u).then(r=>r.json());
-      const feats=(j.states||[]).filter(s=>s[5]!=null&&s[6]!=null&&!s[8]).slice(0,600).map(s=>({
-        type:'Feature',geometry:{type:'Point',coordinates:[s[5],s[6]]},
-        properties:{name:(s[1]||s[0]||'').trim()||'UNKNOWN',alt:s[7]||0,
-          sub:'ALT '+Math.round(s[7]||0)+' M · '+Math.round((s[9]||0)*3.6)+' KM/H · '+esc(s[2]||'')+' · LIVE TRANSPONDER (OPENSKY)'}}));
-      srcSet('ge-air',feats);
-      status('air',feats.length+' AIRCRAFT LIVE IN VIEW — color = altitude',1);
-    }catch(e){
-      try{
-        const c=map.getCenter();
-        const j2=await fetch('https://api.adsb.lol/v2/lat/'+c.lat.toFixed(3)+'/lon/'+c.lng.toFixed(3)+'/dist/250').then(r=>r.json());
-        const feats=(j2.ac||[]).filter(a=>a.lat!=null&&a.lon!=null).slice(0,600).map(a=>({type:'Feature',geometry:{type:'Point',coordinates:[a.lon,a.lat]},properties:{name:((a.flight||a.hex||'')+'').trim()||'UNKNOWN',alt:(typeof a.alt_baro==='number'?a.alt_baro*0.3048:0),sub:'ALT '+(typeof a.alt_baro==='number'?Math.round(a.alt_baro*0.3048):0)+' M · '+Math.round((a.gs||0)*1.852)+' KM/H · LIVE ADS-B (adsb.lol)'}}));
-        srcSet('ge-air',feats);
-        status('air',feats.length+' AIRCRAFT LIVE — FALLBACK NET (adsb.lol)',1);
-      }catch(e2){ status('air','AIR FEEDS BUSY — retrying in 12s'); }
-    }
-  }
-  function toggleAir(on){
-    if(on){ tickAir(); airTimer=setInterval(tickAir,12000); }
-    else { clearInterval(airTimer); srcSet('ge-air',[]); status('air','OFF'); }
-  }
-
-  /* ================= SHIPS ================= */
-  function shipSub(){
-    if(!shipWS||shipWS.readyState!==1) return;
-    const b=map.getBounds();
-    shipWS.send(JSON.stringify({APIKey:shipKey,BoundingBoxes:[[[b.getSouth(),b.getWest()],[b.getNorth(),b.getEast()]]]}));
-  }
-  function toggleShips(on){
-    if(on){
-      if(!shipKey){
-        const k=prompt('LIVE SHIPS needs a FREE aisstream.io API key (real-time AIS has no keyless source).\nRegister free at aisstream.io — takes ~1 minute.\nPaste your key (kept in memory only):');
-        if(!k||!k.trim()){ st.ships=false; syncButtons(); status('ships','NO KEY — get a free one at aisstream.io'); return; }
-        shipKey=k.trim();
-      }
-      status('ships','CONNECTING TO GLOBAL AIS STREAM…');
-      try{ shipWS=new WebSocket('wss://stream.aisstream.io/v0/stream'); }catch(e){ status('ships','SOCKET BLOCKED IN THIS SANDBOX'); return; }
-      shipWS.onopen=()=>{ shipSub(); status('ships','AIS STREAM LIVE — vessels appear as they broadcast',1); };
-      shipWS.onmessage=ev=>{
-        try{
-          const m=JSON.parse(ev.data);
-          if(m.MessageType!=='PositionReport') return;
-          const md=m.MetaData||{};
-          ships.set(md.MMSI,{lon:md.longitude,lat:md.latitude,name:(md.ShipName||'MMSI '+md.MMSI).trim(),ts:Date.now()});
-        }catch(_){}
-      };
-      shipWS.onclose=()=>{ if(st.ships) status('ships','AIS DISCONNECTED — check key / retry toggle'); };
-      map.on('moveend',shipSub);
-      st._shipDraw=setInterval(()=>{
-        if(!st.ships) return;
-        const now=Date.now(), feats=[];
-        ships.forEach((v,k)=>{ if(now-v.ts>300000){ships.delete(k);return;}
-          feats.push({type:'Feature',geometry:{type:'Point',coordinates:[v.lon,v.lat]},properties:{name:v.name,sub:'LIVE AIS POSITION (aisstream.io)'}}); });
-        srcSet('ge-ships',feats.slice(0,500));
-        if(feats.length) status('ships',feats.length+' VESSELS LIVE (last 5 min)',1);
-      },2000);
-    } else {
-      try{ shipWS&&shipWS.close(); }catch(_){}
-      clearInterval(st._shipDraw); ships.clear(); srcSet('ge-ships',[]); status('ships','OFF');
-    }
-  }
-
-  /* ================= STREET VIEW (embedded) ================= */
-  function svOpen(lat,lng){
-    $('#sv-title').textContent='STREET VIEW — '+lat.toFixed(5)+', '+lng.toFixed(5);
-    $('#sv-frame').src=`https://maps.google.com/maps?layer=c&cbll=${lat},${lng}&output=svembed`;
-    $('#sv-ext').href=`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lat},${lng}`;
-    $('#sv-overlay').classList.add('open');
-  }
-  function mapClickSV(e){ if(st.street) svOpen(e.lngLat.lat,e.lngLat.lng); }
-
-  /* ================= LIVE CAMS (in-app player) ================= */
-  function parseYT(v){
-    v=(v||'').trim();
-    let m=v.match(/[?&]v=([\w-]{6,})/)||v.match(/youtu\.be\/([\w-]{6,})/)||v.match(/embed\/([\w-]{6,})/);
-    if(m) return {type:'video',id:m[1]};
-    m=v.match(/channel\/(UC[\w-]{10,})/); if(m) return {type:'channel',id:m[1]};
-    if(/^UC[\w-]{10,}$/.test(v)) return {type:'channel',id:v};
-    if(/^[\w-]{6,}$/.test(v)) return {type:'video',id:v};
+  function currentView(){
+    try{ if(map){ const c=map.getCenter(); return {lat:c.lat,lon:c.lng,zoom:map.getZoom()}; } }catch(_){ }
     return null;
   }
-  function camEmbed(e){
-    return e.type==='channel'
-      ?'https://www.youtube-nocookie.com/embed/live_stream?channel='+e.id+'&autoplay=1&mute=1'
-      :'https://www.youtube-nocookie.com/embed/'+e.id+'?autoplay=1&mute=1';
+  function gevSetup(){
+    const cur=gevBase();
+    const u=prompt("GOD'S EYE VIEW runs on this PC through Pinokio.\n\n"+
+      "1. In Pinokio, press START on God's Eye View.\n"+
+      "2. When it says Ready, copy the address it shows (looks like http://127.0.0.1:42003/).\n"+
+      "3. Paste it here. OPHANIM remembers it on this browser.\n\n"+
+      "Not installed yet? Cancel, then press ⓘ for the install link.", cur||'http://127.0.0.1:');
+    if(u==null) return null;
+    const b=normBase(u);
+    if(!b){ status('gev','THAT ADDRESS DID NOT PARSE — TRY AGAIN'); return null; }
+    Store.set('gev.url',b); paintGev(); return b;
   }
-  function camOpen(cam){
-    $('#cam-title').textContent='LIVE CAM — '+cam[0].toUpperCase()+' · '+cam[1].toUpperCase();
-    const frame=$('#cam-frame');
-    if(cam[4]){ frame.src=''; $('#cam-note').innerHTML='<button class="q-mini" id="cam-try">▶ PLAY '+esc(cam[0])+'</button> — official stream embed. If YouTube shows an error, that channel isn\'t live right now; paste any live URL below instead.'; setTimeout(()=>{const b=$('#cam-try'); if(b) b.onclick=()=>{frame.src=camEmbed(cam[4]);};},0); }
-    else { frame.src=''; $('#cam-note').innerHTML='No built-in stream pinned for this spot — live-cam stream IDs change often, so paste any YouTube live URL below and it plays here. <a href="https://www.youtube.com/results?search_query='+encodeURIComponent(cam[0]+' '+cam[1]+' live cam')+'&sp=EgJAAQ%253D%253D" target="_blank" rel="noopener" style="color:var(--cyan)">FIND ONE ▸</a>';}
-    $('#cam-overlay').classList.add('open');
-    camList(cam);
+  function gevOpen(){
+    const b=gevBase()||gevSetup(); if(!b) return;
+    const url=gevLink(b,currentView());
+    const w=window.open(url,'ophanim-gev');
+    if(!w) status('gev','POP-UP BLOCKED — allow pop-ups for OPHANIM');
+    if(window.Bus) Bus.emit('overwatch:gev',{url});
   }
+  function paintGev(){ const b=gevBase(); status('gev', b?'OPENS '+b.replace(/^https?:\/\//,'')+' AT THIS SPOT':'NOT LINKED — PRESS ⚙ TO LINK', !!b); }
 
-  function camList(sel){
-    const box=$('#cam-list'); if(!box) return;
-    box.innerHTML=CAMS.map(c=>{
-      const isSel=sel&&c[0]===sel[0];
-      const act=c[4]?'<button class="q-mini cam-play" data-cam="'+esc(c[0])+'">▶ PLAY</button>'
-                    :'<a class="q-mini" target="_blank" rel="noopener" href="https://www.youtube.com/results?search_query='+encodeURIComponent(c[0]+' '+c[1]+' live cam')+'&sp=EgJAAQ%253D%253D">FIND ▸</a>';
-      return '<div class="cam-row'+(isSel?' sel':'')+'"><span>📷 '+esc(c[0])+' · '+esc(c[1])+'</span>'+act+'</div>';
-    }).join('');
-    box.querySelectorAll('.cam-play').forEach(b=>b.addEventListener('click',()=>{
-      const c=CAMS.find(x=>x[0]===b.dataset.cam);
-      if(c&&c[4]){ $('#cam-frame').src=camEmbed(c[4]); $('#cam-title').textContent='LIVE CAM — '+c[0].toUpperCase(); }
-    }));
+  /* ================= AIS FEED (headless → Chokepoint Watch) ================= */
+  function aisParse(raw){
+    let m; try{ m=JSON.parse(raw); }catch(_){ return null; }
+    if(!m||m.MessageType!=='PositionReport') return null;
+    const md=m.MetaData||{}, pr=(m.Message&&m.Message.PositionReport)||{};
+    if(!isFinite(md.latitude)||!isFinite(md.longitude)) return null;
+    return {mmsi:md.MMSI,lat:md.latitude,lon:md.longitude,sog:pr.Sog};
   }
-  function camDir(){
-    $('#cam-title').textContent='LIVE CAMS — DIRECTORY';
-    $('#cam-frame').src='';
-    $('#cam-note').innerHTML='Pick a point below, or paste any YouTube live URL — everything plays in-app. Live-cam stream IDs rotate, so the FIND links open a one-click search; paste what you find back here.';
-    $('#cam-overlay').classList.add('open');
-    camList(null);
+  function aisMsg(raw){
+    const p=aisParse(raw); if(!p) return;
+    count++; lastMsg=Date.now();
+    if(window.Chokepoint) Chokepoint.ingest(p.mmsi,p.lat,p.lon,p.sog,lastMsg);
   }
+  function aisConnect(){
+    if(!st.ais||!key) return;
+    status('ais','CONNECTING TO GLOBAL AIS STREAM…');
+    try{ ws=new WebSocket('wss://stream.aisstream.io/v0/stream'); }catch(e){ status('ais','SOCKET BLOCKED IN THIS SANDBOX'); return; }
+    ws.onopen=()=>{ backoff=2000; try{ ws.send(JSON.stringify({APIKey:key,BoundingBoxes:[[[-85,-180],[85,180]]]})); }catch(_){ }
+      status('ais','LIVE — FEEDING CHOKEPOINT WATCH',1); };
+    ws.onmessage=ev=>aisMsg(ev.data);
+    ws.onclose=()=>{ ws=null; if(!st.ais) return; status('ais','DROPPED — RETRYING'); clearTimeout(retryT); retryT=setTimeout(aisConnect,backoff=Math.min(backoff*2,60000)); };
+    ws.onerror=()=>{ try{ ws&&ws.close(); }catch(_){ } };
+  }
+  function aisToggle(on){
+    if(on){
+      if(!key) key=String(Store.get('ais.key','')||'').trim()||null;
+      if(!key){
+        const k=prompt('CHOKEPOINT WATCH needs a FREE aisstream.io key for live ship positions.\nRegister free at aisstream.io (about a minute) and paste the key:\n(OPHANIM keeps it on this browser only.)');
+        if(!k||!k.trim()){ st.ais=false; syncButtons(); status('ais','NO KEY — get a free one at aisstream.io'); return; }
+        key=k.trim(); Store.set('ais.key',key);
+      }
+      Store.set('ais.on',true); aisConnect();
+    } else {
+      Store.set('ais.on',false); clearTimeout(retryT);
+      try{ ws&&ws.close(); }catch(_){ } ws=null; status('ais','OFF · FREE KEY');
+    }
+  }
+  setInterval(()=>{ if(st.ais&&ws&&ws.readyState===1) status('ais',count.toLocaleString()+' POSITIONS → CHOKEPOINT WATCH',1); },5000);
+
   /* ================= UI ================= */
-  function syncButtons(){ $$('#ge-panel [data-ge]').forEach(b=>b.classList.toggle('on',st[b.dataset.ge])); }
+  function syncButtons(){ $$('#ge-panel [data-ge]').forEach(b=>b.classList.toggle('on',!!st[b.dataset.ge])); }
   function mount(m){
     map=m;
     if(mounted) return;
@@ -3808,49 +4095,33 @@ window.GodsEye=(()=>{
     const wrap=$('#sat-wrap');
     wrap.insertAdjacentHTML('beforeend',`
     <div id="ge-panel">
-      <h5>👁 OPHANIM OVERWATCH — LIVE LAYERS</h5>
-      <button data-ge="sats">🛰 SATELLITES <small id="ges-sats">OFF</small></button>
-      <button data-ge="air">✈ AIRCRAFT <small id="ges-air">OFF</small></button>
-      <button data-ge="ships">🚢 SHIPS <small id="ges-ships">OFF · FREE KEY</small></button>
-      <button data-ge="street">👁 STREET VIEW MODE <small id="ges-street">OFF</small></button>
-      <button id="ge-cams-btn">📷 LIVE CAMS <small>${CAMS.length} POINTS</small></button>
+      <h5>👁 OPHANIM OVERWATCH</h5>
+      <div class="gev-row"><button id="gev-open" class="gev-main">🌐 GOD'S EYE VIEW <small id="ges-gev">…</small></button>
+        <button id="gev-cfg" class="gev-mini" title="Link God's Eye View (paste its Pinokio address)">⚙</button>
+        <a class="gev-mini" href="${GEV_PINOKIO}" target="_blank" rel="noopener" title="Install God's Eye View (Pinokio) · source: ${GEV_REPO}">ⓘ</a></div>
+      <button data-ge="ais">🚢 AIS FEED <small id="ges-ais">OFF · FREE KEY</small></button>
       <button data-ge="ww" class="on">🔥 WARWATCH <small id="ges-ww">ARMED — PULSES ON GEOLOCATED EVENTS</small></button>
+      <button data-ge="cp" class="on">⚓ CHOKEPOINTS <small id="ges-cp">16 FENCES · DWELL FROM LIVE AIS</small></button>
+      <button data-ge="dc" class="on">⚡ DATACENTERS <small id="ges-dc">22 NAMED HUBS · ~11,000 GLOBAL</small></button>
       <h6 class="ww-h">THEATER HEAT · 24H</h6><div id="ww-heat" class="ww-heat"></div>
-    </div>
-    <div id="sv-overlay" class="ge-modal"><div class="ge-box">
-      <div class="ge-head"><b id="sv-title">STREET VIEW</b><a id="sv-ext" class="q-mini" target="_blank" rel="noopener">OPEN EXTERNAL</a><button class="q-mini ge-close" data-close="sv-overlay">✕ CLOSE</button></div>
-      <iframe id="sv-frame" allow="accelerometer; gyroscope"></iframe>
-      <p class="q-note">Embedded Google Street View — no page-hopping. Blank panel = no coverage at that exact spot (click on a city street) or the embed is blocked; use OPEN EXTERNAL as fallback.</p>
-    </div></div>
-    <div id="cam-overlay" class="ge-modal"><div class="ge-box">
-      <div class="ge-head"><b id="cam-title">LIVE CAM</b><button class="q-mini ge-close" data-close="cam-overlay">✕ CLOSE</button></div>
-      <iframe id="cam-frame" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
-      <p class="q-note" id="cam-note"></p>
-      <div id="cam-list"></div>
-      <div class="cam-paste"><input id="cam-url" placeholder="Paste any YouTube live URL / video ID / channel URL — plays in-app"><button id="cam-go" class="q-mini">▶ PLAY</button></div>
-    </div></div>`);
+    </div>`);
     $$('#ge-panel [data-ge]').forEach(b=>b.addEventListener('click',()=>{
       const k=b.dataset.ge; st[k]=!st[k]; syncButtons();
-      ({sats:toggleSats,air:toggleAir,ships:toggleShips,ww:on=>{ if(window.WarWatch) WarWatch.setVisible(on); const e=$('#ges-ww'); if(e){e.textContent=on?'ARMED — PULSES ON GEOLOCATED EVENTS':'MUTED';e.style.color=on?'var(--green)':'var(--dim)';} },street:on=>{ map.getCanvas().style.cursor=on?'crosshair':''; status('street',on?'CLICK ANYWHERE ON EARTH':'OFF',on); }})[k](st[k]);
+      ({ais:aisToggle,
+        dc:on=>{ if(window.Datacenter) Datacenter.setVisible(on); },
+        cp:on=>{ if(window.Chokepoint) Chokepoint.setVisible(on); },
+        ww:on=>{ if(window.WarWatch) WarWatch.setVisible(on); const e=$('#ges-ww'); if(e){e.textContent=on?'ARMED — PULSES ON GEOLOCATED EVENTS':'MUTED';e.style.color=on?'var(--green)':'var(--dim)';} }
+      })[k](st[k]);
     }));
-    $('#ge-cams-btn').addEventListener('click',camDir);
-    $$('.ge-close').forEach(b=>b.addEventListener('click',()=>{ $('#'+b.dataset.close).classList.remove('open'); $('#sv-frame').src=''; if(b.dataset.close==='cam-overlay')$('#cam-frame').src=''; }));
-    $('#cam-go').addEventListener('click',()=>{
-      const e=parseYT($('#cam-url').value);
-      if(e){ $('#cam-frame').src=camEmbed(e); $('#cam-note').textContent='STREAMING — in-app.'; }
-      else $('#cam-note').textContent='COULD NOT PARSE THAT URL/ID.';
-    });
-    map.on('click',mapClickSV);
+    $('#gev-open').addEventListener('click',gevOpen);
+    $('#gev-cfg').addEventListener('click',gevSetup);
+    paintGev();
     if(window.WarWatch) WarWatch.attach(map);
-    /* cam markers as DOM markers */
-    CAMS.forEach(cam=>{
-      const el=document.createElement('div'); el.className='gm ge-cam'; el.style.background='#E05AFF'; el.style.color='#E05AFF';
-      el.innerHTML='<span>📷 '+esc(cam[0])+' · '+esc(cam[1])+'</span>';
-      el.addEventListener('click',ev=>{ev.stopPropagation();camOpen(cam);});
-      new maplibregl.Marker({element:el,anchor:'center'}).setLngLat([cam[3],cam[2]]).addTo(map);
-    });
+    if(window.Chokepoint) Chokepoint.mountLayer(map);
+    if(window.Datacenter) Datacenter.mountLayer(map);
+    if(Store.get('ais.on',false)&&Store.get('ais.key','')){ st.ais=true; syncButtons(); aisToggle(true); }
   }
-  return {mount};
+  return {mount, gevLink, altFromZoom, normBase, aisParse, _aisMsg:aisMsg, stats:()=>({ais:st.ais,count,lastMsg,gev:gevBase()})};
 })();
 </script>
 <script>try{ if(window.self!==window.top||location.protocol==='blob:') document.getElementById('sandbox-note').style.display='block'; }catch(e){ document.getElementById('sandbox-note').style.display='block'; }</script>
@@ -3875,7 +4146,7 @@ window.Charts=(()=>{
     rates:[['US 10Y YIELD',4.12,.012],['US 2Y YIELD',3.52,.013],['US 30Y YIELD',4.55,.010],['BUND 10Y',2.58,.015],['JGB 10Y',1.08,.018],['GILT 10Y',4.38,.012],['OAT 10Y',3.05,.013],['BTP 10Y',3.42,.013]],
     derivatives:[['VIX',16.4,.05],['ES FUTURES',6862,.011],['NQ FUTURES',25260,.014],['CL FUTURES',62.9,.018],['GC FUTURES',4156,.010],['ZN 10Y FUT',111.4,.004],['SOFR 3M (PRICE)',96.22,.0009],['FF 30D (PRICE)',96.05,.0008],['BTC PERP FUNDING %',.012,.25],['EURODOLLAR LEGACY',96.1,.001]]
   };
-  const CLS=[['all','ALL'],['crypto','CRYPTO · LIVE'],['fx','FX · LIVE'],['indices','INDICES'],['commodities','COMMODITIES'],['rates','RATES & BONDS'],['derivatives','DERIVATIVES'],['chain','ON-CHAIN · LIVE'],['sovereign','SOVEREIGN · LIVE']];
+  const CLS=[['all','ALL'],['chokepoints','CHOKEPOINTS · LIVE'],['crypto','CRYPTO · LIVE'],['fx','FX · LIVE'],['indices','INDICES'],['commodities','COMMODITIES'],['rates','RATES & BONDS'],['derivatives','DERIVATIVES'],['chain','ON-CHAIN · LIVE'],['sovereign','SOVEREIGN · LIVE']];
 
   function fmtV(v){ if(!isFinite(v)) return '—';
     const a=Math.abs(v);
@@ -3909,7 +4180,23 @@ window.Charts=(()=>{
     x.fillText(fmtV(mx),4,10); x.fillText(fmtV(mn),4,H-2);
   }
 
+  function drawStrip(cv,rows){
+    const dpr=window.devicePixelRatio||1,W=cv.clientWidth||250,H=cv.clientHeight||96;
+    cv.width=W*dpr;cv.height=H*dpr;const x=cv.getContext('2d');x.scale(dpr,dpr);
+    const rh=Math.max(4,Math.floor(H/Math.max(rows.length,1))-1);
+    rows.forEach((r,ri)=>{
+      const y=ri*(rh+1),n=r.cis.length||1,cw=(W-58)/n;
+      x.font='7px IBM Plex Mono';x.fillStyle='#5F7592';x.fillText(String(r.name).slice(0,10).toUpperCase(),0,y+rh-1);
+      r.cis.forEach((ci,i)=>{
+        x.fillStyle=ci==null?'rgba(58,75,99,.35)':ci>2.5?'#FF5A66':ci>1.6?'#F5B83D':ci<0.4?'#35C4F0':'rgba(95,117,146,.5)';
+        x.fillRect(58+i*cw,y,Math.max(cw-.5,.5),rh);
+      });
+    });
+  }
   function card(c){
+    if(c.type==='strip') return `<div class="ch-card ch-wide" data-cls="${c.cls}">
+      <div class="ch-head"><b>${c.name}</b><span class="live-badge">LIVE</span></div>
+      <canvas class="ch-cv ch-strip"></canvas><div class="ch-sub">${c.sub}</div></div>`;
     const last=c.series[c.series.length-1], first=c.series[0];
     const chg=(last-first)/Math.abs(first||1)*100;
     const up=chg>=0;
@@ -3931,6 +4218,11 @@ window.Charts=(()=>{
     (window.Wall&&Wall.getFX?Wall.getFX():[]).forEach(r=>{
       if(r.series&&r.series.length>5) charts.push({cls:"fx",name:r.name,series:r.series,live:1,color:'#37E08C',sub:'30D DAILY · ECB REFERENCE'});
     });
+    /* LIVE chokepoint CI */
+    if(window.Chokepoint){ try{ const cd=Chokepoint.chartData();
+      charts.push({cls:'chokepoints',type:'strip',name:'CHOKEPOINT CI HEATSTRIP',strip:cd.strip,live:1,color:'#F5B83D',series:[1,1],sub:'7D · CI PER FENCE · AMBER>1.6 RED>2.5 BLUE<0.4 · LIVE AIS-DERIVED'});
+      cd.lines.slice(0,12).forEach(l=>charts.push({cls:'chokepoints',name:l.name,series:l.series,live:1,color:'#F5B83D',sub:'CONGESTION INDEX · 7D · LIVE AIS-DERIVED'}));
+    }catch(_){}}
     /* SIM classes */
     const simColor={indices:'#F5B83D',commodities:'#F58B3D',rates:'#9D7BFF',derivatives:'#FF5A66'};
     for(const k in SIMS) SIMS[k].forEach((s,i)=>{
@@ -3964,7 +4256,7 @@ window.Charts=(()=>{
       <div class="ch-grid">${list.map(card).join('')}</div>`;
     $$('#charts-scroll [data-ccls]').forEach(b=>b.addEventListener('click',()=>{cls=b.dataset.ccls;render();}));
     const cards=$$('#charts-scroll .ch-card');
-    cards.forEach((el,i)=>{ const c=list[i]; drawChart(el.querySelector('.ch-cv'),c.series,c.color,c.live); });
+    cards.forEach((el,i)=>{ const c=list[i]; if(c.type==='strip') drawStrip(el.querySelector('.ch-cv'),c.strip||[]); else drawChart(el.querySelector('.ch-cv'),c.series,c.color,c.live); });
   }
 
   function ensure(){
@@ -3988,6 +4280,15 @@ window.Charts=(()=>{
    ============================================================ */
 
 /* ---- shared event bus (feature-detected: v2.8's bus wins if present) ---- */
+/* ---- persistence shim: localStorage on real origins (GitHub Pages / direct file), memory fallback in sandboxed previews ---- */
+window.Store = window.Store || (()=>{ let ok=false;
+  try{ const k='__oph_probe'; localStorage.setItem(k,'1'); localStorage.removeItem(k); ok=true; }catch(_){ }
+  const mem={};
+  return { get:(k,d)=>{ try{ if(ok){ const v=localStorage.getItem('oph:'+k); return v==null?d:JSON.parse(v); } }catch(_){ } return (k in mem)?mem[k]:d; },
+           set:(k,v)=>{ mem[k]=v; try{ if(ok) localStorage.setItem('oph:'+k,JSON.stringify(v)); }catch(_){ } },
+           persistent:()=>ok };
+})();
+
 window.Bus = window.Bus || (()=>{ const m={};
   return { on:(t,f)=>((m[t]=m[t]||[]).push(f),f),
            off:(t,f)=>{ m[t]=(m[t]||[]).filter(x=>x!==f); },
@@ -4111,7 +4412,7 @@ window.OmniFeed=(()=>{
     renderTable();
   }
   async function poll(src){
-    if(!src.enabled||src.adapter==='websocket') return;
+    if(!src.enabled||src.adapter==='websocket'||src.adapter==='derived') return;
     try{
       const raw=await Limiter.run(src.url,()=>Adapters[src.adapter](src));
       if(raw==null) throw new Error('NO DATA — all fetch hops failed');
@@ -4120,11 +4421,14 @@ window.OmniFeed=(()=>{
     }catch(e){ markFail(src,e.message||e); }
     schedule(src);
   }
+  function calcAdapt(rate){ return rate<1?2:(rate>60?0.5:1); }  /* barren feeds slow down, rich feeds speed up */
   function schedule(src){
     clearTimeout(src._t);
-    if(!src.enabled||src.adapter==='websocket') return;
+    if(!src.enabled||src.adapter==='websocket'||src.adapter==='derived') return;
+    const rate=(src._items||0)/Math.max((Date.now()-bootT)/36e5,.05);
+    src._adapt=(src.adaptive===false)?1:calcAdapt(rate);
     const mult=(src._fails>=5)?10:1;   /* dead sources keep probing at 10× to self-heal */
-    src._t=setTimeout(()=>poll(src), Math.max(15000,(src.pollInterval||60000)*mult));
+    src._t=setTimeout(()=>poll(src), Math.max(15000,(src.pollInterval||60000)*src._adapt*mult));
   }
 
   /* ================= SOURCE REGISTRY — every feed OPHANIM knows, migrated ================= */
@@ -4150,16 +4454,16 @@ window.OmniFeed=(()=>{
     { id:'opensky-air', name:'OpenSky · Aircraft', category:'geo', adapter:'json', pollInterval:60000, enabled:false,
       url:'https://opensky-network.org/api/states/all?lamin=25&lomin=-125&lamax=50&lomax=-65',
       parser:j=>((j&&j.states)||[]).slice(0,40).filter(s=>s[5]!=null).map(s=>({title:(s[1]||s[0]||'').trim()||'AIRCRAFT',lat:s[6],lon:s[5],value:s[7]||0})),
-      note:'Heavy — Overwatch layer owns live rendering; enable here for the raw stream.' },
+      note:'Heavy — live aircraft rendering now lives in God\'s Eye View; enable here only for the raw stream.' },
     { id:'celestrak-tle', name:'Celestrak · TLEs', category:'geo', adapter:'csv', delim:'\u00a7', noHeader:true, pollInterval:21600000, enabled:false,
       url:'https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=tle',
       parser:rows=>{ const out=[]; for(let i=0;i+2<rows.length+1&&i+2<=rows.length;i+=3){ const n=String(rows[i][0]||'').trim(); if(n&&rows[i+1]&&String(rows[i+1][0])[0]==='1') out.push({title:'TLE · '+n}); } return out; },
-      note:'Overwatch propagates orbits live (SGP4); this entry feeds the raw element stream.' },
+      note:'Live orbits now render in God\'s Eye View; this entry feeds the raw element stream.' },
     { id:'aisstream-ships', name:'aisstream · Ships', category:'geo', adapter:'websocket', pollInterval:0, enabled:false,
       url:'wss://stream.aisstream.io/v0/stream',
-      onOpen:ws=>{ if(window.__aisKey) ws.send(JSON.stringify({APIKey:window.__aisKey,BoundingBoxes:[[[-85,-180],[85,180]]]})); },
-      parser:d=>{ try{ const m=JSON.parse(d); if(m.MessageType!=='PositionReport') return null; const md=m.MetaData||{}; return [{title:(md.ShipName||'MMSI '+md.MMSI||'VESSEL').trim(),lat:md.latitude,lon:md.longitude}]; }catch(_){ return null; } },
-      note:'Needs free aisstream.io key (set via Overwatch SHIPS toggle).' }
+      onOpen:ws=>{ const k=window.__aisKey||Store.get('ais.key',''); if(k) ws.send(JSON.stringify({APIKey:k,BoundingBoxes:[[[-85,-180],[85,180]]]})); },
+      parser:d=>{ try{ const m=JSON.parse(d); if(m.MessageType!=='PositionReport') return null; const md=m.MetaData||{}; const pr=(m.Message&&m.Message.PositionReport)||{}; if(window.Chokepoint) Chokepoint.ingest(md.MMSI,md.latitude,md.longitude,pr.Sog,Date.now()); return [{title:(md.ShipName||'MMSI '+md.MMSI||'VESSEL').trim(),lat:md.latitude,lon:md.longitude}]; }catch(_){ return null; } },
+      note:'Off by default: Overwatch AIS FEED already streams this socket. Needs the same free aisstream.io key.' }
   ];
   const getSource=id=>SOURCES.find(s=>s.id===id);
 
@@ -4209,7 +4513,7 @@ window.OmniFeed=(()=>{
         <td>${esc(s.category)}</td><td>${esc(s.adapter)}</td>
         <td>${s._last?new Date(s._last).toLocaleTimeString('en-GB'):'—'}</td>
         <td>${iph(s)}</td><td>${s._errCount||0}</td>
-        <td>${s.adapter==='websocket'?'stream':`<input class="of-int" data-of-int="${s.id}" type="number" min="15" value="${Math.round((s.pollInterval||60000)/1000)}">`}</td>
+        <td>${s.adapter==='derived'?'derived':s.adapter==='websocket'?'stream':`<input class="of-int" data-of-int="${s.id}" type="number" min="15" value="${Math.round((s.pollInterval||60000)/1000)}"> <small title="adaptive multiplier from yield" style="color:var(--faint)">×${s._adapt||1}</small>`}</td>
         <td><button class="q-mini" data-of-test="${s.id}">TEST</button></td>
         <td><button class="q-mini" data-of-tog="${s.id}">${s.enabled?'ON':'OFF'}</button></td></tr>`).join('');
     el.querySelectorAll('[data-of-test]').forEach(b=>b.onclick=()=>{ const s=getSource(b.dataset.ofTest); if(!s)return; if(s.adapter==='websocket'){ diag(s.id,'WS sources stream — toggle ON to connect'); renderDiag(); } else { s._fails=0; poll(s); } });
@@ -4251,7 +4555,8 @@ window.OmniFeed=(()=>{
             <div class="q-sides"><button id="of-detect" class="q-side buy">⌕ DETECT &amp; PREVIEW</button><button id="of-save" class="q-side sell" disabled>＋ SAVE TO REGISTRY</button></div>
             <div id="of-preview" class="of-prev"></div>
             <p class="q-note">Auto-detects JSON → RSS → CSV → falls back to the HTML adapter. Single-file app = no server storage: EXPORT gives you a JSON block to paste back into the SOURCES registry for permanence.</p>
-            <button id="of-export" class="q-mini">⬇ EXPORT USER SOURCES</button>
+            <button id="of-export" class="q-mini">⬇ EXPORT USER SOURCES</button> <button id="of-selftest" class="q-mini">⚕ RUN SELF-TEST</button> <button id="of-diagx" class="q-mini">⬇ DIAGNOSTICS REPORT</button>
+            <div id="of-self" class="of-diagbox" style="margin-top:8px;max-height:160px"></div>
             <textarea id="of-exportbox" class="of-export" style="display:none" readonly></textarea>
           </div>
         </div>
@@ -4293,6 +4598,17 @@ window.OmniFeed=(()=>{
       container.querySelector('#of-save').disabled=true; pending=null;
       container.querySelector('#of-n').textContent=SOURCES.length;
     };
+    const selfBox=container.querySelector('#of-self');
+    function paintSelf(){ if(!window.SelfTest||!selfBox) return;
+      const r=SelfTest.run();
+      selfBox.innerHTML=r.map(x=>'<div style="color:'+(x.ok?'var(--green)':'var(--red)')+'">'+(x.ok?'✔':'✘')+' '+x.name+(x.info?' — '+x.info:'')+'</div>').join('');
+    }
+    container.querySelector('#of-selftest').onclick=paintSelf;
+    container.querySelector('#of-diagx').onclick=()=>{ if(!window.SelfTest) return;
+      const blob=new Blob([JSON.stringify(SelfTest.report(),null,2)],{type:'application/json'});
+      const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='ophanim-diagnostics.json'; a.click();
+    };
+    setTimeout(paintSelf,500);
     container.querySelector('#of-export').onclick=()=>{
       const box=container.querySelector('#of-exportbox');
       box.style.display='block'; box.value=exportBlock(); box.select();
@@ -4312,7 +4628,13 @@ window.OmniFeed=(()=>{
     diag('omnifeed','ENGINE STARTED — '+i+' pollers staggered at 1.5s intervals');
   }
 
-  return { start, mountPanel, diag, normalize, detect, autoParser,
+  function updateDerived(id,patch){ const src=getSource(id); if(!src) return;
+    if(patch.status) src._status=patch.status;
+    if(patch.items!=null){ src._items=patch.items; }
+    src._last=Date.now(); src._lastErr=patch.err||null;
+    renderTable();
+  }
+  return { start, mountPanel, diag, normalize, detect, autoParser, calcAdapt, updateDerived,
            addSource:s=>{ SOURCES.push(s); return s; },
            pollNow:id=>{ const s=getSource(id); return s?poll(s):null; },
            getSource, sources:()=>SOURCES, events:()=>st.events,
@@ -4456,6 +4778,1061 @@ window.WarWatch=(()=>{
 
   return {attach,onEvent,geolocate,score,setVisible,
           heat:()=>heat,pulseCount:()=>pulses.length,pendingCount:()=>pending.length};
+})();
+</script>
+<script>
+/* ============================================================
+   AUTOGNOSIS — SelfTest: the twin examines itself.
+   Boot self-check + one-click diagnostics report for the
+   improvement loop (paste the JSON back to Claude → patch →
+   harness → commit). The system that grades the system.
+   ============================================================ */
+window.SelfTest=(()=>{
+  const VERSION='v3.0';
+  function run(){
+    const R=[]; const T=(name,fn)=>{ try{ const v=fn(); R.push({name,ok:!!v,info:typeof v==='string'?v:''}); }catch(e){ R.push({name,ok:false,info:String(e.message||e).slice(0,60)}); } };
+    T('MODULES PRESENT',()=>['Wall','Quant','Hub','Charts','Overwatch','OmniFeed','WarWatch','Sat'].every(m=>!!window[m]));
+    T('NAV COMPLETE (10 MODES)',()=>document.querySelectorAll('.mode').length===10);
+    T('OMNIFEED NORMALIZE SCHEMA',()=>{ const e=OmniFeed.normalize({id:'t',url:'u'},{title:'x'}); return typeof e.sourceId==='string'&&typeof e.timestamp==='number'&&typeof e.title==='string'&&typeof e.url==='string'; });
+    T('OMNIFEED ADAPTIVE POLL',()=>OmniFeed.calcAdapt(0.2)===2&&OmniFeed.calcAdapt(100)===0.5&&OmniFeed.calcAdapt(10)===1);
+    T('WARWATCH GEOLOCATE',()=>{ const g=WarWatch.geolocate('missile strike near kyiv'); return !!(g&&isFinite(g.lat)); });
+    T('WARWATCH SEVERITY',()=>WarWatch.score('missile attack').sev===3&&WarWatch.score('peace talks').sev===1);
+    T('STORE ROUNDTRIP',()=>{ Store.set('__t',{a:1}); const v=Store.get('__t',null); return !!(v&&v.a===1); });
+    T('PERSISTENCE',()=>Store.persistent()?'localStorage LIVE — learning survives reload':'memory only (sandboxed preview)');
+    T('QUANT LEARN STATE',()=>{ if(!window.Quant||!Quant.learnState) return false; const L=Quant.learnState(); const sum=Object.values(L.weights).reduce((a,b)=>a+b,0); return Math.abs(sum-1)<0.02&&Object.values(L.weights).every(w=>w>=0.049&&w<=0.601); });
+    T('SYNAPSE ENGINE',()=>{ if(!window.OPHX) return false;
+      const req=['runMonteCarlo','runAudit','auditSignal','recordOutcome','propose','resolveOpen','selfTest'];
+      if(!req.every(f=>typeof OPHX[f]==='function')) return false;
+      const m1=OPHX.runMonteCarlo({paths:400,seed:5}), m2=OPHX.runMonteCarlo({paths:400,seed:5});
+      return m1.var95>=0&&Math.abs(m1.var95-m2.var95)<1e-9; });
+    T('SETTLEMENT STATION',()=>!window.Settlement||Settlement.selfTest().ok);
+    T('EVENT BUS',()=>{ let hit=false; const f=Bus.on('__self',()=>hit=true); Bus.emit('__self',1); Bus.off('__self',f); return hit; });
+    return R;
+  }
+  function report(){
+    let sandboxed=false; try{ sandboxed=(window.self!==window.top); }catch(_){ sandboxed=true; }
+    return { app:'OPHANIM', version:VERSION, generated:new Date().toISOString(),
+      userAgent:navigator.userAgent, persistent:Store.persistent(), sandboxed,
+      selftest:run(),
+      sources:(window.OmniFeed?OmniFeed.sources():[]).map(s=>({id:s.id,adapter:s.adapter,enabled:s.enabled,status:s._status||'idle',fails:s._fails||0,errs:s._errCount||0,items:s._items||0,adapt:s._adapt||1,lastErr:s._lastErr||null})),
+      eventsIngested:(window.OmniFeed?OmniFeed.events().length:0),
+      quantLearning:(window.Quant&&Quant.learnState)?Quant.learnState():null,
+      theaterHeat:(window.WarWatch)?Object.fromEntries(Object.entries(WarWatch.heat()).map(kv=>[kv[0],kv[1].length])):{} };
+  }
+  /* boot self-check: run quietly, log, and announce over the bus */
+  setTimeout(()=>{ try{ const r=run(); const bad=r.filter(x=>!x.ok);
+    console.log('%cOPHANIM AUTOGNOSIS','color:#35C4F0','—',r.length,'checks,',bad.length,'failing',bad.map(x=>x.name));
+    Bus.emit('self:report',{results:r,failing:bad.length});
+  }catch(_){} },6000);
+  return {run,report,VERSION};
+})();
+</script>
+<script>
+/* ============================================================
+   CHOKEPOINT WATCH — maritime congestion monitor (v3.1)
+   Consumes the EXISTING AIS stream (Overwatch AIS FEED + OmniFeed
+   aisstream source) — no new network calls. Geofence → dwell →
+   hour-of-day baseline → Congestion Index → anomaly states →
+   globe layer + heatstrip + Bus events + AUTOGNOSIS candidates.
+   Data absence ≠ traffic absence: stale AIS freezes transitions.
+   ============================================================ */
+window.Chokepoint=(()=>{
+  /* ---------- clock (injectable for the harness) ---------- */
+  let NOW=()=>Date.now();
+  const DWELL_MIN=45, ANCHOR_SOG=1.5, SLOT_MS=15*60*1000, STALE_AIS_MS=30*60*1000, VESSEL_TTL_MS=20*60*1000;
+  let CAP_BYTES=400*1024;
+
+  /* ---------- GEOFENCE REGISTRY (generous rings: lanes + anchorages) ---------- */
+  const CHOKEPOINTS=[
+   {id:'suez',name:'Suez Canal',kind:'chokepoint',center:[32.35,30.45],marketTags:['oil','shipping','eu-retail'],
+    notes:'EU–Asia artery; 12% of global trade.', /* Gulf of Suez → canal → Port Said anchorage */
+    polygon:[[32.2,29.4],[33.0,29.6],[33.1,30.3],[32.6,31.35],[32.45,31.75],[31.9,31.75],[31.9,31.1],[32.0,30.2],[32.2,29.4]]},
+   {id:'panama',name:'Panama Canal',kind:'chokepoint',center:[-79.65,9.08],marketTags:['shipping','us-retail','grain'],
+    notes:'Pacific & Atlantic approach anchorages; drought-sensitive.',
+    polygon:[[-80.15,8.55],[-79.25,8.6],[-79.1,9.0],[-79.55,9.55],[-80.1,9.5],[-80.3,9.0],[-80.15,8.55]]},
+   {id:'hormuz',name:'Strait of Hormuz',kind:'chokepoint',center:[56.5,26.6],marketTags:['oil','lng'],
+    notes:'~20% of global oil; zero alternatives.',
+    polygon:[[55.6,25.8],[57.6,25.7],[58.0,26.4],[56.9,27.2],[55.9,26.9],[55.6,25.8]]},
+   {id:'malacca',name:'Malacca / Singapore Strait',kind:'chokepoint',center:[102.4,2.2],marketTags:['oil','shipping','asia-mfg'],
+    notes:'Asia\u2019s main energy + container lane.',
+    polygon:[[99.6,4.6],[100.8,3.6],[103.2,1.5],[104.4,1.05],[104.6,1.4],[103.5,2.1],[101.4,4.2],[100.2,5.2],[99.6,4.6]]},
+   {id:'babelmandeb',name:'Bab el-Mandeb',kind:'chokepoint',center:[43.4,12.6],marketTags:['oil','shipping','eu-retail'],
+    notes:'Red Sea gate; reroute barometer (VOID here = Cape detours).',
+    polygon:[[42.6,11.9],[43.9,11.9],[44.1,12.9],[43.4,13.6],[42.8,13.2],[42.6,11.9]]},
+   {id:'turkstraits',name:'Turkish Straits',kind:'chokepoint',center:[28.4,40.6],marketTags:['grain','oil'],
+    notes:'Bosphorus+Dardanelles combined; Black Sea grain/crude.',
+    polygon:[[26.0,39.9],[26.9,40.0],[29.4,40.7],[29.35,41.35],[28.8,41.4],[26.3,40.5],[26.0,39.9]]},
+   {id:'gibraltar',name:'Strait of Gibraltar',kind:'chokepoint',center:[-5.6,35.95],marketTags:['shipping'],
+    notes:'Med gateway.',
+    polygon:[[-6.6,35.6],[-4.9,35.55],[-4.7,36.2],[-6.4,36.3],[-6.6,35.6]]},
+   {id:'danish',name:'Danish Straits',kind:'chokepoint',center:[10.9,55.6],marketTags:['oil'],
+    notes:'Baltic crude exit.',
+    polygon:[[9.7,54.8],[11.6,54.7],[12.9,55.6],[12.4,56.3],[10.4,56.4],[9.7,55.4],[9.7,54.8]]},
+   {id:'taiwan',name:'Taiwan Strait',kind:'chokepoint',center:[119.5,24.5],marketTags:['asia-mfg','shipping','semis'],
+    notes:'Semiconductor supply line; geopolitical tripwire.',
+    polygon:[[117.6,22.9],[120.6,22.2],[122.1,24.9],[120.7,26.3],[118.6,25.2],[117.6,22.9]]},
+   {id:'shanghai',name:'Shanghai / Ningbo',kind:'port',center:[122.2,30.6],marketTags:['asia-mfg','us-retail','eu-retail'],
+    notes:'World\u2019s #1 port complex; Yangtze anchorages.',
+    polygon:[[120.9,29.6],[122.6,29.5],[123.2,30.6],[122.5,31.6],[121.2,31.5],[120.9,29.6]]},
+   {id:'singapore',name:'Port of Singapore',kind:'port',center:[103.8,1.2],marketTags:['shipping','oil','asia-mfg'],
+    notes:'Bunkering capital; eastern+western anchorages.',
+    polygon:[[103.5,1.0],[104.15,0.95],[104.3,1.3],[103.9,1.5],[103.55,1.35],[103.5,1.0]]},
+   {id:'rotterdam',name:'Rotterdam',kind:'port',center:[4.1,51.95],marketTags:['eu-retail','oil'],
+    notes:'Europe\u2019s #1; Maasvlakte + offshore anchorage.',
+    polygon:[[3.3,51.7],[4.4,51.75],[4.65,52.05],[3.9,52.25],[3.3,52.05],[3.3,51.7]]},
+   {id:'lalb',name:'LA / Long Beach',kind:'port',center:[-118.2,33.7],marketTags:['us-retail','asia-mfg'],
+    notes:'US import front door; San Pedro Bay anchorages.',
+    polygon:[[-118.6,33.4],[-117.9,33.45],[-117.8,33.8],[-118.3,33.95],[-118.65,33.75],[-118.6,33.4]]},
+   {id:'houston',name:'Houston / Galveston',kind:'port',center:[-94.9,29.3],marketTags:['oil','us-retail','petchem'],
+    notes:'Home market. Gulf energy complex; fog-queue prone.',
+    polygon:[[-95.4,28.9],[-94.3,29.0],[-94.35,29.75],[-95.1,29.8],[-95.45,29.4],[-95.4,28.9]]},
+   {id:'jebelali',name:'Jebel Ali',kind:'port',center:[55.05,25.0],marketTags:['shipping','mena'],
+    notes:'Gulf transshipment hub.',
+    polygon:[[54.7,24.75],[55.35,24.8],[55.5,25.2],[55.0,25.4],[54.7,25.1],[54.7,24.75]]},
+   {id:'ningbo_outer',name:'Zhoushan Anchorage',kind:'port',center:[122.8,29.9],marketTags:['asia-mfg'],
+    notes:'Overflow anchorage for Ningbo-Zhoushan.',
+    polygon:[[122.3,29.4],[123.4,29.4],[123.6,30.2],[122.7,30.4],[122.3,29.9],[122.3,29.4]]}
+  ];
+  /* bounding boxes for cheap pre-check */
+  CHOKEPOINTS.forEach(f=>{const xs=f.polygon.map(p=>p[0]),ys=f.polygon.map(p=>p[1]);
+    f.bbox=[Math.min(...xs),Math.min(...ys),Math.max(...xs),Math.max(...ys)];});
+  const byId=Object.fromEntries(CHOKEPOINTS.map(f=>[f.id,f]));
+  const TRAFFIC_W={suez:1,panama:.7,hormuz:1,malacca:1.2,babelmandeb:.9,turkstraits:.5,gibraltar:.8,danish:.4,taiwan:.9};
+
+  /* ---------- ray-casting point-in-polygon (~15 lines, no libs) ---------- */
+  function pip(lon,lat,poly){
+    let inside=false;
+    for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+      const xi=poly[i][0],yi=poly[i][1],xj=poly[j][0],yj=poly[j][1];
+      if(((yi>lat)!==(yj>lat)) && (lon < (xj-xi)*(lat-yi)/(yj-yi)+xi)) inside=!inside;
+    }
+    return inside;
+  }
+  const inFence=(f,lon,lat)=>lon>=f.bbox[0]&&lon<=f.bbox[2]&&lat>=f.bbox[1]&&lat<=f.bbox[3]&&pip(lon,lat,f.polygon);
+
+  /* ---------- live vessel + per-fence state ---------- */
+  const vessels=new Map();            // mmsi -> {lon,lat,sog,ts}
+  const F={};                          // fenceId -> runtime
+  CHOKEPOINTS.forEach(f=>{F[f.id]={inside:new Map(),transitSince:0,state:'LEARNING',pend:null,pendN:0,lastCI:null,frozen:false};});
+  let lastIngest=0, degraded=false, lastSlot=-1, mounted=false, map=null;
+
+  function ingest(mmsi,lat,lon,sog,ts){
+    if(mmsi==null||!isFinite(lat)||!isFinite(lon)) return;
+    ts=ts||NOW(); lastIngest=Math.max(lastIngest,ts);
+    vessels.set(mmsi,{lon,lat,sog:isFinite(sog)?sog:null,ts});
+    for(const f of CHOKEPOINTS){
+      const st=F[f.id], inNow=inFence(f,lon,lat), was=st.inside.has(mmsi);
+      if(inNow&&!was) st.inside.set(mmsi,ts);
+      else if(!inNow&&was){
+        const dwellMin=(ts-st.inside.get(mmsi))/60000;
+        st.inside.delete(mmsi);
+        if(dwellMin<DWELL_MIN) st.transitSince++;
+      }
+    }
+  }
+
+  /* ---------- packed day store: {a,c,t,d}[96] per fence per day, -1 = no data ---------- */
+  const ST=window.Store||{get:(k,d)=>d,set:()=>{},persistent:()=>false};
+  const KEY='chokepoint.v1';
+  let DB=(()=>{ const d=ST.get(KEY,null);
+    return (d&&d.version===1)?d:{version:1,retentionDays:28,fences:{}}; })();
+  const dayKey=ts=>{const d=new Date(ts);return d.getUTCFullYear()*10000+(d.getUTCMonth()+1)*100+d.getUTCDate();};
+  const slotOf=ts=>Math.floor((ts%86400000)/SLOT_MS);
+  function dayArr(fid,dk){
+    const f=DB.fences[fid]=DB.fences[fid]||{days:{}};
+    return f.days[dk]=f.days[dk]||{a:Array(96).fill(-1),c:Array(96).fill(-1),t:Array(96).fill(-1),d:Array(96).fill(-1)};
+  }
+  function persist(){
+    let json=JSON.stringify(DB);
+    while(json.length>CAP_BYTES&&DB.retentionDays>7){       /* degrade retention, never crash */
+      DB.retentionDays=DB.retentionDays===28?14:7;
+      pruneOld(); json=JSON.stringify(DB);
+    }
+    if(json.length>CAP_BYTES){ pruneOld(true); json=JSON.stringify(DB); } /* last resort: hard trim */
+    ST.set(KEY,DB);
+    return json.length;
+  }
+  function pruneOld(hard){
+    const cut=dayKey(NOW()-DB.retentionDays*86400000);
+    for(const fid in DB.fences){
+      const days=DB.fences[fid].days, keys=Object.keys(days).sort();
+      for(const k of keys) if(+k<cut) delete days[k];
+      if(hard){ const kk=Object.keys(days).sort(); while(kk.length>5){ delete days[kk.shift()]; } }
+    }
+  }
+
+  /* ---------- baseline: hour-of-day rolling median (needs ≥3 days) ---------- */
+  const median=a=>{ if(!a.length) return null; const s=[...a].sort((x,y)=>x-y); const m=s.length>>1; return s.length%2?s[m]:(s[m-1]+s[m])/2; };
+  function baseline(fid,ts){
+    const hour=Math.floor(slotOf(ts)/4), today=dayKey(ts), vals=[], daysSeen=new Set();
+    const fd=(DB.fences[fid]||{}).days||{};
+    for(const dk in fd){ if(+dk===today) continue;
+      if(+dk<dayKey(ts-14*86400000)) continue;
+      for(let s=hour*4;s<hour*4+4;s++){ const v=fd[dk].a[s]; if(v>=0){ vals.push(v); daysSeen.add(dk); } }
+    }
+    return daysSeen.size>=3?median(vals):null;
+  }
+  function daysOfData(fid){
+    const fd=(DB.fences[fid]||{}).days||{}; let n=0;
+    for(const dk in fd) if(fd[dk].a.some(v=>v>=0)) n++;
+    return n;
+  }
+
+  /* ---------- sampling + anomaly state machine ---------- */
+  function classify(ci){ if(ci==null) return null;
+    if(ci>2.5) return 'SEVERE'; if(ci>1.6) return 'CONGESTED'; if(ci<0.4) return 'VOID'; return 'NORMAL'; }
+  function tick(){
+    const now=NOW(), slot=Math.floor(now/SLOT_MS);
+    degraded=(now-lastIngest)>STALE_AIS_MS;
+    /* prune stale vessels + their fence membership */
+    vessels.forEach((v,id)=>{ if(now-v.ts>VESSEL_TTL_MS){ vessels.delete(id);
+      CHOKEPOINTS.forEach(f=>F[f.id].inside.delete(id)); }});
+    if(slot===lastSlot) return; lastSlot=slot;
+    const dk=dayKey(now), sl=slotOf(now);
+    for(const f of CHOKEPOINTS){
+      const st=F[f.id], arr=dayArr(f.id,dk);
+      if(degraded){                                    /* data absence ≠ traffic absence */
+        arr.a[sl]=-1; arr.c[sl]=-1; arr.t[sl]=-1; arr.d[sl]=-1;
+        st.frozen=true; st.transitSince=0; continue;
+      }
+      st.frozen=false;
+      let count=0,anch=0,dwellSum=0,dwellN=0;
+      st.inside.forEach((enteredAt,mmsi)=>{
+        const v=vessels.get(mmsi); if(!v) return;
+        count++;
+        if(v.sog!=null&&v.sog<ANCHOR_SOG) anch++;
+        const dm=(now-enteredAt)/60000;
+        if(dm>=DWELL_MIN){ dwellSum+=dm; dwellN++; }
+      });
+      arr.a[sl]=anch; arr.c[sl]=count; arr.t[sl]=st.transitSince; arr.d[sl]=dwellN?Math.round(dwellSum/dwellN):0;
+      st.transitSince=0;
+      /* state machine: any transition needs 2 consecutive qualifying samples */
+      if(daysOfData(f.id)<3){ st.state='LEARNING'; st.lastCI=null; continue; }
+      const base=baseline(f.id,now);
+      const ci=base==null?null:anch/Math.max(base,1);
+      st.lastCI=ci==null?null:+ci.toFixed(2);
+      const target=classify(ci);
+      if(target==null){ continue; }
+      if(target===st.state){ st.pend=null; st.pendN=0; }
+      else if(target===st.pend){ if(++st.pendN>=2){ transition(f,st,target,ci); } }
+      else { st.pend=target; st.pendN=1; }
+    }
+    pruneOld(); persist(); pushDerivedHealth(); paint();
+  }
+  function transition(f,st,target,ci){
+    const from=st.state; st.state=target; st.pend=null; st.pendN=0;
+    if(window.Bus) Bus.emit('omni:event',{sourceId:'chokepoint-watch',timestamp:NOW(),
+      title:f.name.toUpperCase()+' \u2192 '+target+' (CI '+(ci!=null?ci.toFixed(1):'?')+')',
+      body:'was '+from+' \u00b7 '+f.marketTags.join(','),lat:f.center[1],lon:f.center[0],
+      severity:target==='SEVERE'?3:(target==='NORMAL'?1:2),url:'#chokepoint-'+f.id});
+  }
+
+  /* ---------- OMNIFEED derived-source health ---------- */
+  function pushDerivedHealth(){
+    if(!window.OmniFeed||!OmniFeed.updateDerived) return;
+    const items=CHOKEPOINTS.reduce((s,f)=>s+F[f.id].inside.size,0);
+    OmniFeed.updateDerived('chokepoint-watch',{
+      status:degraded?'warn':'ok', items,
+      err:degraded?'AIS STALE >30min \u2014 transitions frozen (absence \u2260 empty sea)':null});
+  }
+
+  /* ---------- series helpers (charts + popups) ---------- */
+  function series7d(fid,field){
+    const fd=(DB.fences[fid]||{}).days||{}; const out=[]; const now=NOW();
+    for(let d=6;d>=0;d--){ const dk=dayKey(now-d*86400000), day=fd[dk];
+      for(let s=0;s<96;s++) out.push(day?day[field][s]:-1); }
+    return out;
+  }
+  function ci7d(fid){
+    const a=series7d(fid,'a'); const out=[]; const now=NOW();
+    for(let i=0;i<a.length;i++){ if(a[i]<0){ out.push(null); continue; }
+      const ts=now-(a.length-1-i)*SLOT_MS, b=baseline(fid,ts);
+      out.push(b==null?null:+(a[i]/Math.max(b,1)).toFixed(2)); }
+    return out;
+  }
+  function chartData(){
+    return {
+      strip:CHOKEPOINTS.map(f=>({name:f.name,state:F[f.id].state,cis:ci7d(f.id).filter((_,i)=>i%4===0)})),
+      lines:CHOKEPOINTS.filter(f=>F[f.id].state!=='LEARNING').map(f=>({
+        name:'CI \u00b7 '+f.name,series:ci7d(f.id).map(v=>v==null?1:v),live:1}))
+    };
+  }
+
+  /* ---------- AUTOGNOSIS signal candidates (registered, observed) ---------- */
+  function tagCI(tag){
+    let vals=[];
+    for(const f of CHOKEPOINTS){ const st=F[f.id];
+      if(st.state==='LEARNING'||st.frozen||st.lastCI==null) continue;
+      if(f.marketTags.includes(tag)) vals.push(st.lastCI); }
+    return vals.length?Math.max(...vals):null;
+  }
+  function shippingCI(){
+    let s=0,w=0;
+    for(const f of CHOKEPOINTS){ const st=F[f.id], wt=TRAFFIC_W[f.id];
+      if(!wt||st.state==='LEARNING'||st.frozen||st.lastCI==null) continue;
+      s+=st.lastCI*wt; w+=wt; }
+    return w?+(s/w).toFixed(2):null;
+  }
+  const sigDir=ci=>ci==null?0:(Math.abs(ci-1)>0.6?-1:0);   /* big deviation either way = risk-off */
+  const sigNorm=ci=>ci==null?null:Math.max(-1,Math.min(1,ci-1));
+  function registerSignals(){
+    if(!window.Quant||!Quant.registerCandidate) return;
+    Quant.registerCandidate('sig_chokepoint_oil',{label:'CHOKEPOINT \u00b7 OIL',
+      value:()=>sigNorm(tagCI('oil')),dir:()=>sigDir(tagCI('oil'))});
+    Quant.registerCandidate('sig_chokepoint_shipping',{label:'CHOKEPOINT \u00b7 SHIPPING',
+      value:()=>sigNorm(shippingCI()),dir:()=>sigDir(shippingCI())});
+  }
+
+  /* ---------- GLOBE LAYER (WarWatch control) ---------- */
+  const COLORS={NORMAL:'#5F7592',CONGESTED:'#F5B83D',SEVERE:'#FF5A66',VOID:'#35C4F0',LEARNING:'#3A4B63',DEGRADED:'#3A4B63'};
+  let labels=[];
+  function fc(){ return {type:'FeatureCollection',features:CHOKEPOINTS.map(f=>{
+    const st=F[f.id], state=st.frozen?'DEGRADED':st.state;
+    return {type:'Feature',geometry:{type:'Polygon',coordinates:[f.polygon]},
+      properties:{id:f.id,state,color:COLORS[state]||'#3A4B63'}};})};
+  }
+  function mountLayer(m){
+    map=m; if(mounted||!map) return; mounted=true;
+    try{
+      map.addSource('cp-fences',{type:'geojson',data:fc()});
+      map.addLayer({id:'cp-fill',type:'fill',source:'cp-fences',
+        paint:{'fill-color':['get','color'],'fill-opacity':.16}});
+      map.addLayer({id:'cp-line',type:'line',source:'cp-fences',
+        paint:{'line-color':['get','color'],'line-width':1.4,'line-opacity':.8,
+               'line-dasharray':['case',['any',['==',['get','state'],'LEARNING'],['==',['get','state'],'DEGRADED']],['literal',[2,2]],['literal',[1,0]]]}});
+      map.on('click','cp-fill',e=>{
+        const id=e.features[0].properties.id, f=byId[id], st=F[id];
+        const a=series7d(id,'a').filter((_,i)=>i%4===0), mx=Math.max(1,...a.filter(v=>v>=0));
+        const pts=a.map((v,i)=>(i/(a.length-1)*180).toFixed(1)+','+(v<0?36:36-(v/mx*32)).toFixed(1)).join(' ');
+        const dwell=(()=>{const dd=series7d(id,'d');for(let i=dd.length-1;i>=0;i--) if(dd[i]>=0) return dd[i];return 0;})();
+        try{ new maplibregl.Popup({className:'ge-pop'}).setLngLat(e.lngLat).setHTML(
+          '<b>'+f.name+'</b><br><span>'+(st.frozen?'DEGRADED':st.state)+' \u00b7 '+st.inside.size+' inside \u00b7 CI '+(st.lastCI==null?'\u2014':st.lastCI)+
+          ' \u00b7 avg dwell '+dwell+'m</span><br><svg width="184" height="40" style="margin-top:4px"><polyline points="'+pts+
+          '" fill="none" stroke="'+(COLORS[st.state]||'#5F7592')+'" stroke-width="1.5"/></svg>'+
+          '<br><span style="color:#9D7BFF">'+f.marketTags.join(' \u00b7 ')+'</span><br><span style="color:#5F7592">'+f.notes+'</span>').addTo(map); }catch(_){}
+      });
+      map.on('mouseenter','cp-fill',()=>{ map.getCanvas().style.cursor='pointer'; });
+      /* DOM labels at centers */
+      CHOKEPOINTS.forEach(f=>{
+        const el=document.createElement('div'); el.className='cp-lbl'; el.textContent=f.name;
+        try{ const mk=new maplibregl.Marker({element:el,anchor:'center'}).setLngLat(f.center).addTo(map);
+             labels.push({el,f}); }catch(_){}
+      });
+      paint();
+    }catch(_){}
+  }
+  function paint(){
+    if(!mounted||!map) return;
+    try{ const s=map.getSource('cp-fences'); if(s) s.setData(fc()); }catch(_){}
+    labels.forEach(({el,f})=>{ const st=F[f.id];
+      el.textContent=f.name+' \u00b7 '+((()=>{let a=0;st.inside.forEach((_,m)=>{const v=vessels.get(m);if(v&&v.sog!=null&&v.sog<ANCHOR_SOG)a++;});return a;})())+'\u2693 \u00b7 CI '+(st.lastCI==null?'\u2014':st.lastCI);
+      el.style.color=COLORS[st.frozen?'DEGRADED':st.state]||'#5F7592';
+    });
+  }
+  function setVisible(on){
+    if(!mounted||!map) return;
+    ['cp-fill','cp-line'].forEach(l=>{ try{ map.setLayoutProperty(l,'visibility',on?'visible':'none'); }catch(_){} });
+    labels.forEach(({el})=>el.style.display=on?'':'none');
+  }
+
+  /* ---------- boot ---------- */
+  function start(){
+    if(window.OmniFeed&&OmniFeed.addSource&&!OmniFeed.getSource('chokepoint-watch'))
+      OmniFeed.addSource({id:'chokepoint-watch',name:'Chokepoint Watch',category:'geo',adapter:'derived',
+        url:'internal://ais-derived',pollInterval:0,enabled:true,
+        note:'Derived from the live AIS stream \u2014 dwell counts inside 16 geofenced chokepoints/ports.'});
+    registerSignals();
+    setInterval(tick,60000);
+    pushDerivedHealth();
+  }
+  setTimeout(start,5000);
+
+  return { ingest, mountLayer, setVisible, chartData, CHOKEPOINTS,
+    stateOf:id=>({...F[id],inside:F[id].inside.size}),
+    _test:{ pip, inFence, tick, setNow:fn=>{NOW=fn;}, baseline, ci7d, F, DB:()=>DB,
+      setCap:b=>{CAP_BYTES=b;}, persist, hydrate:()=>{const d=ST.get(KEY,null); if(d&&d.version===1) DB=d; return DB;},
+      reset:()=>{DB={version:1,retentionDays:28,fences:{}}; lastSlot=-1; lastIngest=0;
+        CHOKEPOINTS.forEach(f=>{F[f.id]={inside:new Map(),transitSince:0,state:'LEARNING',pend:null,pendN:0,lastCI:null,frozen:false};});
+        vessels.clear();},
+      seedDay:(fid,dk,aVals)=>{const arr=dayArr(fid,dk); for(let s=0;s<96;s++) arr.a[s]=aVals[s]!==undefined?aVals[s]:arr.a[s];},
+      vessels } };
+})();
+</script>
+<script>
+/* ============================================================
+   SETTLEMENT WATCH — v3.2 station
+   The $4.7Q core publishes no tape; three public windows do:
+   A · PPD SWAPS TAPE   (DTCC EOD file-drop → same-origin JSON; SIM until Sentinel job lands)
+   B · CANTON PULSE     (Global Synchronizer scan API · keyless poll · BFT rotate · self-heal)
+   C · CNS FAILS X-RAY  (SEC fortnightly batch → same-origin JSON; SIM until job lands)
+   Doctrine: every lane badged LIVE/SNAPSHOT/SIM · self-heal with
+   human-readable reason · boot self-test · nothing unbadged ever.
+   ============================================================ */
+window.Settlement=(()=>{
+  const $s=sel=>document.querySelector(sel);
+  const esc=x=>String(x==null?'':x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const ST=window.Store||{get:(k,d)=>d,set:()=>{},persistent:()=>false};
+  let inited=false, uiTimer=null;
+
+  /* ---------- deterministic SIM engine (verbatim-adjacent per build order) ---------- */
+  let seed=20260718;
+  function rnd(){ seed=(seed*1103515245+12345)%2147483648; return seed/2147483648; }
+  const CLASSES=['RATES','CREDITS','FOREX','EQUITIES','COMMODITIES'];
+  const PRODUCTS={RATES:['USD IRS 10Y','SOFR OIS 2Y','EUR IRS 5Y','USD SWAPTION 5Y10Y'],
+    CREDITS:['CDX.NA.IG.44','CDX.NA.HY.44','ITRAXX EUR 43','SINGLE-NAME CDS'],
+    FOREX:['EURUSD FWD 3M','USDJPY NDF','GBPUSD SWAP 1Y','USDCNH NDF 6M'],
+    EQUITIES:['SPX VAR SWAP','TRS RUSSELL 2K','SX5E DIVIDEND','SINGLE-STOCK TRS'],
+    COMMODITIES:['WTI SWAP CAL26','HH NATGAS SWAP','GOLD FWD 12M','POWER PJM SWAP']};
+  const CAPS=[100,110,120,170,250];
+  function simDay(){
+    const prints=[]; const base=Date.UTC(2026,6,21);
+    for(let i=0;i<120;i++){
+      const cls=CLASSES[Math.floor(rnd()*5)];
+      const capped=rnd()<0.34;
+      const mm=capped?CAPS[Math.floor(rnd()*CAPS.length)]:+(2+rnd()*95).toFixed(1);
+      prints.push({t:base+Math.floor(rnd()*86340000),cls,
+        prod:PRODUCTS[cls][Math.floor(rnd()*4)],mm,capped,
+        px:+(0.5+rnd()*4.8).toFixed(3)});
+    }
+    prints.sort((a,b)=>a.t-b.t);
+    return {date:'2026-07-21',prints};
+  }
+  function simFails(){
+    const periods=[]; let v=41e9;
+    for(let i=0;i<12;i++){ v=v*(0.93+rnd()*0.16)+(i===10?9e9:0); /* one engineered stress period */
+      const m=['2026-01a','2026-01b','2026-02a','2026-02b','2026-03a','2026-03b','2026-04a','2026-04b','2026-05a','2026-05b','2026-06a','2026-06b'][i];
+      periods.push({label:m,totalFailValue:Math.round(v)}); }
+    return {periods,asof:'2026-06b · ~2-week lag'};
+  }
+
+  /* ---------- severity (WarWatch-style z vs trailing 6) ---------- */
+  function sevOf(values){
+    if(!values||values.length<7) return {tier:'CALM',z:0};
+    const last=values[values.length-1], six=values.slice(-7,-1);
+    const mean=six.reduce((a,b)=>a+b,0)/6;
+    const sd=Math.max(Math.sqrt(six.reduce((a,b)=>a+(b-mean)*(b-mean),0)/6),Math.abs(mean)*1e-6||1e-9);
+    const z=(last-mean)/sd;
+    return {tier:z>3.5?'CRITICAL':z>2.5?'STRESS':z>1.5?'ELEVATED':'CALM',z:+z.toFixed(2)};
+  }
+  const SEVCOL={CALM:'#3ddc84',ELEVATED:'#ffb454',STRESS:'#ff8a5c',CRITICAL:'#ff5c5c'};
+
+  /* ---------- lane state ---------- */
+  const lanes={
+    ppd:{badge:'SIM',why:'awaiting Sentinel EOD job → data/ppd_latest.json',data:null},
+    canton:{badge:'SNAPSHOT',why:'seeded 2026-07-18 · canton.foundation + The Tie',live:false},
+    fails:{badge:'SIM',why:'awaiting Sentinel fortnightly job → data/ftd_latest.json',data:null}
+  };
+  const CANTON_SNAP=Object.assign({sv:57,validators:'675+',fees:'$2.2M',supply:'39.1B CC',rate:'$0.132',cap:'$5.15B',asof:'2026-07-18'},
+    ST.get('settlement.canton',{}));
+
+  function pushHealth(){
+    if(!window.OmniFeed||!OmniFeed.updateDerived) return;
+    OmniFeed.updateDerived('ppd-swaps',{status:lanes.ppd.badge==='SIM'?'warn':'ok',items:tapeQ.length,err:lanes.ppd.badge+' · '+lanes.ppd.why});
+    OmniFeed.updateDerived('canton-pulse',{status:lanes.canton.live?'ok':'warn',items:1,err:lanes.canton.badge+' · '+lanes.canton.why});
+    OmniFeed.updateDerived('cns-fails',{status:lanes.fails.badge==='SIM'?'warn':'ok',items:(failsData.periods||[]).length,err:lanes.fails.badge+' · '+lanes.fails.why});
+  }
+
+  /* ---------- Lane A: tape engine (rAF · FIFO recycle) ---------- */
+  let tapeQ=[], tapeIdx=0, tapeX=0, lastT=0, chipCounts={};
+  function printHTML(p){
+    const hh=new Date(p.t).toISOString().slice(11,19);
+    return `<span class="sw-print" data-cls="${p.cls}"><i>${hh}Z</i><b style="color:${clsColor(p.cls)}">${p.cls.slice(0,3)}</b> ${esc(p.prod)} <em>$${p.mm}MM${p.capped?'<u class="sw-cap">+</u>':''}</em> ${p.px!=null?'@'+p.px:''}</span>`;
+  }
+  const clsColor=c=>({RATES:'#ffb454',CREDITS:'#ff5c5c',FOREX:'#4dd0e1',EQUITIES:'#3ddc84',COMMODITIES:'#c792ea'}[c]||'#c8d3dc');
+  function seedTape(prints){
+    tapeQ=prints; tapeIdx=0; tapeX=0; chipCounts={};
+    CLASSES.forEach(c=>chipCounts[c]=prints.filter(p=>p.cls===c).length);
+    const tr=$s('#sw-track'); if(!tr) return;
+    tr.innerHTML=''; tr.style.transform='translateX(0px)';
+    for(let i=0;i<Math.min(28,prints.length);i++){ tr.insertAdjacentHTML('beforeend',printHTML(prints[i])); tapeIdx=i+1; }
+    renderChips();
+  }
+  function renderChips(){
+    const el=$s('#sw-chips'); if(!el) return;
+    el.innerHTML=CLASSES.map(c=>`<span class="sw-chip" style="border-color:${clsColor(c)};color:${clsColor(c)}">${c} <b>${chipCounts[c]||0}</b></span>`).join('');
+  }
+  function tapeStep(dt){
+    dt=Math.min(dt,64);
+    const tr=$s('#sw-track'); if(!tr||!tr.firstChild) return;
+    tapeX-=0.045*dt;
+    const first=tr.firstChild, w=(first.getBoundingClientRect().width||140)+14;
+    if(-tapeX>=w){
+      tapeX+=w; tr.removeChild(first);
+      tr.insertAdjacentHTML('beforeend',printHTML(tapeQ[tapeIdx%tapeQ.length])); tapeIdx++;
+    }
+    tr.style.transform='translateX('+tapeX.toFixed(1)+'px)';
+  }
+  function tapeLoop(now){
+    requestAnimationFrame(tapeLoop);
+    if(typeof state!=='undefined'&&state.view!=='settle') { lastT=now; return; }
+    if(reduceMotionSW()) return;
+    const dt=now-(lastT||now); lastT=now;
+    tapeStep(dt);
+  }
+  const reduceMotionSW=()=>{ try{ return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(_){ return false; } };
+
+  /* ---------- Lane B: Canton live attempt (verbatim-adjacent skeleton + BFT rotate) ---------- */
+  const CANTON_BASE='https://scan.sv-1.global.canton.network.sync.global/api/scan';
+  let pollTimer=null;
+  function setPill(id,badge,color){ const p=$s('#sw-pill-'+id); if(p){ p.textContent=badge; p.style.color=color; p.style.borderColor=color; } }
+  function cantonStatus(msg){ const el=$s('#sw-canton-status'); if(el) el.textContent=msg; }
+  function applyLive(n,src){
+    lanes.canton.live=true; lanes.canton.badge='LIVE'; lanes.canton.why='scan API · '+src;
+    CANTON_SNAP.sv=n; CANTON_SNAP.asof=new Date().toISOString().slice(0,16)+'Z';
+    ST.set('settlement.canton',CANTON_SNAP);
+    renderCanton();
+    setPill('canton','LIVE','#3ddc84');
+    cantonStatus('LIVE · '+n+' scan endpoints across SV topology · '+src+' · '+CANTON_SNAP.asof+' · privacy by design: metadata only');
+    pushHealth();
+    if(!pollTimer) pollTimer=setInterval(()=>attemptLive(true),60000);
+  }
+  function heal(reason){
+    lanes.canton.live=false; lanes.canton.badge='SNAPSHOT';
+    lanes.canton.why='live denied ('+reason+') → snapshot retained';
+    setPill('canton','SNAPSHOT','#ffb454');
+    cantonStatus('SNAPSHOT · '+CANTON_SNAP.asof+' · canton.foundation + The Tie · live denied ('+reason+') → snapshot retained');
+    const b=$s('#sw-live-btn'); if(b) b.disabled=false;
+    pushHealth();
+  }
+  function attemptLive(silent,fetchImpl){
+    const F=fetchImpl!==undefined?fetchImpl:(typeof fetch==='function'?fetch:null);
+    const b=$s('#sw-live-btn'); if(b&&!silent) b.disabled=true;
+    let done=false;
+    const fin=r=>{ if(done) return; done=true; heal(r); };
+    if(!F) return fin('no fetch');
+    const t=setTimeout(()=>fin('timeout'),4000);
+    F(CANTON_BASE+'/v0/scans',{mode:'cors'})
+      .then(r=>{ if(!r.ok) throw Error('http '+r.status); return r.json(); })
+      .then(j=>{ clearTimeout(t); if(done) return; done=true;
+        let n=0; (j.scans||[]).forEach(d=>n+=((d&&d.scans)||[]).length);
+        if(!n&&Array.isArray(j.scans)) n=j.scans.length;
+        const bb=$s('#sw-live-btn'); if(bb) bb.disabled=false;
+        applyLive(n||CANTON_SNAP.sv,'sv-1 primary');
+        /* best-effort round heartbeat */
+        F(CANTON_BASE+'/v0/closed-rounds',{mode:'cors'}).then(r=>r.ok?r.json():null).then(cr=>{
+          if(!cr) return;
+          const arr=cr.rounds||cr||[];
+          const latest=Array.isArray(arr)&&arr.length?arr[arr.length-1]:null;
+          const num=latest&&(latest.round??latest.roundNumber??latest.number);
+          if(num!=null) cantonStatus($s('#sw-canton-status').textContent+' · latest round #'+num+' (~10-min cadence ≈144/24h)');
+        }).catch(()=>{});
+      })
+      .catch(e=>{ clearTimeout(t); fin((e&&e.message)||'blocked'); });
+  }
+
+  /* ---------- Lane C: fails render ---------- */
+  let failsData={periods:[]};
+  function renderFails(){
+    const el=$s('#sw-fails'); if(!el) return;
+    const vals=failsData.periods.map(p=>p.totalFailValue);
+    const sev=sevOf(vals);
+    const mx=Math.max(...vals,1);
+    el.innerHTML=failsData.periods.map((p,i)=>{
+      const t=sevOf(vals.slice(0,i+1));
+      return `<div class="sw-bar" title="${p.label} · $${(p.totalFailValue/1e9).toFixed(1)}B fail value · ${t.tier}">
+        <i style="height:${Math.max(6,p.totalFailValue/mx*100)}%;background:${SEVCOL[t.tier]}"></i><span>${p.label.slice(5)}</span></div>`;
+    }).join('');
+    const ro=$s('#sw-sev'); if(ro){ ro.textContent=sev.tier+' · z='+sev.z; ro.style.color=SEVCOL[sev.tier]; }
+    setPill('fails',lanes.fails.badge,SEVCOL[sev.tier]);
+    lanes.fails.sev=sev;
+    pushHealth();
+  }
+  function stress(){ return (lanes.fails.sev)||{tier:'CALM',z:0}; }
+
+  /* ---------- Canton grid ---------- */
+  function renderCanton(){
+    const el=$s('#sw-canton'); if(!el) return;
+    const C=CANTON_SNAP;
+    const cells=[['SUPER VALIDATORS',C.sv],['VALIDATORS',C.validators],['DAILY FEES BURNED',C.fees],
+                 ['CC SUPPLY',C.supply],['CC RATE',C.rate],['IMPLIED CAP',C.cap]];
+    el.innerHTML=cells.map(c=>`<div class="sw-cell"><label>${c[0]}</label><b>${esc(c[1])}</b></div>`).join('');
+  }
+
+  /* ---------- same-origin lane loaders (LIVE when Sentinel jobs land) ---------- */
+  async function tryJSON(path,ms){
+    try{
+      const ctl=new AbortController(); const t=setTimeout(()=>ctl.abort(),ms||3000);
+      const r=await fetch(path,{signal:ctl.signal}); clearTimeout(t);
+      if(!r.ok) return null;
+      return await r.json();
+    }catch(_){ return null; }
+  }
+  async function loadLanes(){
+    const ppd=await tryJSON('data/ppd_latest.json');
+    if(ppd&&Array.isArray(ppd.prints)&&ppd.prints.length){
+      lanes.ppd.badge='LIVE'; lanes.ppd.why='EOD file-drop · '+(ppd.date||'?')+' · same-origin';
+      seedTape(ppd.prints);
+      setPill('ppd','LIVE · EOD','#3ddc84');
+      const st=$s('#sw-ppd-status'); if(st) st.textContent='LIVE · EOD '+(ppd.date||'')+' · DTCC PPD cumulative via Sentinel · replaying '+ppd.prints.length+' prints · capped blocks masked per CFTC caps (red +)';
+    } else {
+      seedTape(simDay().prints);
+      setPill('ppd','SIM','#5c6b78');
+      const st=$s('#sw-ppd-status'); if(st) st.textContent='SIM · deterministic replay (seed 20260718) · awaiting Sentinel EOD job → data/ppd_latest.json';
+    }
+    const ftd=await tryJSON('data/ftd_latest.json');
+    if(ftd&&Array.isArray(ftd.periods)&&ftd.periods.length>=7){
+      lanes.fails.badge='LIVE'; lanes.fails.why='SEC CNS fails · '+(ftd.asof||'')+' · ~2-week lag · same-origin';
+      failsData=ftd;
+    } else { failsData=simFails(); }
+    renderFails();
+    const fs=$s('#sw-fails-status'); if(fs) fs.textContent=(lanes.fails.badge==='LIVE'?'LIVE · ':'SIM · deterministic · ')+lanes.fails.why.replace('awaiting','awaiting');
+    pushHealth();
+  }
+
+  /* ---------- boot self-test (buildActive doctrine) ---------- */
+  const REQUIRED_IDS=['sw-clock','sw-pill-ppd','sw-pill-canton','sw-pill-fails','sw-track','sw-chips',
+    'sw-ppd-status','sw-canton','sw-canton-status','sw-live-btn','sw-fails','sw-sev','sw-fails-status','sw-legend'];
+  let selfTestResult={ok:false,missing:REQUIRED_IDS.slice()};
+  function bootSelfTest(){
+    const missing=REQUIRED_IDS.filter(id=>!document.getElementById(id));
+    selfTestResult={ok:!missing.length,missing};
+    if(missing.length) console.error('SELF-TEST FAIL',missing);
+    else console.log('SELF-TEST PASS · SETTLEMENT WATCH · '+REQUIRED_IDS.length+' ids verified');
+    return selfTestResult;
+  }
+
+  /* ---------- UI ---------- */
+  function ensure(){
+    if(inited) return; inited=true;
+    const root=$s('#settle-scroll');
+    root.innerHTML=`
+    <div class="sw-head"><h2>SETTLEMENT WATCH</h2>
+      <span id="sw-clock" class="sw-clock"></span>
+      <span class="sw-pills">
+        <i class="sw-pill" id="sw-pill-ppd">SIM</i>
+        <i class="sw-pill" id="sw-pill-canton">SNAPSHOT</i>
+        <i class="sw-pill" id="sw-pill-fails">SIM</i>
+      </span></div>
+    <p class="sw-brief">Core DTC/NSCC (~$4.7Q/yr settled · $114T custody) publishes no per-transaction feed. These are the three public windows — the swaps tape the Dodd-Frank act forced open, the Canton rail DTCC is re-platforming onto (limited production Jul 2026 · full launch Oct 2026), and the fails x-ray.</p>
+
+    <h4 class="sw-h">01 · PPD SWAPS TAPE — THE ONLY REAL-TIME PUBLIC WINDOW ON INSTITUTIONAL DERIVATIVES</h4>
+    <div id="sw-chips" class="sw-chiprow"></div>
+    <div class="sw-tapewrap"><div id="sw-track" class="sw-tracks"></div></div>
+    <p class="sw-status" id="sw-ppd-status"></p>
+
+    <h4 class="sw-h">02 · CANTON PULSE — THE RAIL BEING BUILT UNDER THE CORE</h4>
+    <div id="sw-canton" class="sw-grid"></div>
+    <div class="sw-row"><button id="sw-live-btn" class="q-mini">⟲ ATTEMPT LIVE (scan API · keyless · 4s timeout)</button></div>
+    <p class="sw-status" id="sw-canton-status"></p>
+
+    <h4 class="sw-h">03 · CNS FAILS X-RAY — SETTLEMENT STRESS, PER HALF-MONTH</h4>
+    <div class="sw-row"><span class="sw-sevlbl">SEVERITY</span><b id="sw-sev"></b></div>
+    <div id="sw-fails" class="sw-bars"></div>
+    <p class="sw-status" id="sw-fails-status"></p>
+
+    <p class="sw-foot" id="sw-legend">ADAPTERS: A file-drop (Sentinel nightly) · B poll (60s on activation, BFT-rotate) · C batch (Sentinel fortnightly) · BADGES: <b style="color:#3ddc84">LIVE</b> real feed · <b style="color:#ffb454">SNAPSHOT</b> last-good retained · <b style="color:#5c6b78">SIM</b> deterministic replay — nothing unbadged ever renders.</p>`;
+    setInterval(()=>{ const c=$s('#sw-clock'); if(c) c.textContent=new Date().toISOString().slice(11,19)+' UTC'; },1000);
+    $s('#sw-live-btn').addEventListener('click',()=>attemptLive(false));
+    renderCanton();
+    setPill('canton','SNAPSHOT','#ffb454');
+    cantonStatus('SNAPSHOT · '+CANTON_SNAP.asof+' · canton.foundation + The Tie · press ATTEMPT LIVE · transactions invisible by design — metadata only');
+    bootSelfTest();
+    loadLanes();
+    requestAnimationFrame(tapeLoop);
+    /* register the three lanes in OMNIFEED */
+    if(window.OmniFeed&&OmniFeed.addSource){
+      [['ppd-swaps','PPD Swaps Tape','file-drop · same-origin EOD JSON via Sentinel nightly'],
+       ['canton-pulse','Canton Pulse','poll · 60s after live activation · BFT SV rotation'],
+       ['cns-fails','CNS Fails X-Ray','batch · same-origin JSON via Sentinel fortnightly']]
+      .forEach(([id,name,note])=>{ if(!OmniFeed.getSource(id)) OmniFeed.addSource({id,name,category:'finance',adapter:'derived',url:'internal://settlement/'+id,pollInterval:0,enabled:true,note}); });
+      pushHealth();
+    }
+  }
+
+  return { ensure, sevOf, stress, selfTest:()=>selfTestResult, attemptLive,
+    _test:{ tapeStep, queueLen:()=>tapeQ.length, seedTape, simDay, simFails,
+            heal, lanes:()=>lanes, loadLanes } };
+})();
+</script>
+<script>
+/* ============================================================
+   SYNAPSE BRIDGE — v3.3 integration layer
+   Binds the verbatim OPHX engine to the living OPHANIM:
+   · master ← top-12 live coins (factor-tagged, vol annualized)
+   · corr   ← Pearson on shared 7d-hourly returns (Cholesky-
+     validated, 0.8C+0.2I shrinkage fallback) + daily-close
+     accumulator that takes over at ≥30 shared days
+   · portfolio ← the Quant paper book (The Reckoning stand-in);
+     ALL mutations stay routed through Quant.trade()/closePos —
+     the engine's internal position writes are reverted here
+   · persistence ← Store namespace: oph:medallion.trades,
+     oph:synapse.ledger, oph:aladdin.limits, oph:aladdin.corr,
+     oph:aladdin.dailycloses
+   ============================================================ */
+window.SynapseBridge=(()=>{
+  const ST=window.Store||{get:(k,d)=>d,set:()=>{},persistent:()=>false};
+  const FACTORS=sym=>{ sym=String(sym).toUpperCase();
+    if(sym==='BTC'||sym==='ETH') return 'CRYPTO-L1';
+    if(['USDT','USDC','DAI','FDUSD','USDE'].includes(sym)) return 'STABLE';
+    return 'CRYPTO-ALT'; };
+  const LIM_PCT=Object.assign({var95Pct:0.045,mVarPct:0.010,factorConcMax:0.55,minWeight:0.15},
+    ST.get('aladdin.limits',{}));
+  const SIGMAP=e=>{ e=String(e||'');
+    if(e.startsWith('MOM')) return 'MOM-XSEC';
+    if(e.startsWith('MR'))  return 'MR-ZBAND';
+    if(e.startsWith('VBK')) return 'FLOW-IMB';
+    return 'CARRY-RV'; };
+  let corrInfoObj={basis:'static-seed',asOf:null,shrunk:false,n:0};
+  let lastFull=null, _lastSig=null, diag=[];
+  const note=m=>{ diag.unshift(new Date().toISOString().slice(11,19)+' '+m); diag.length=Math.min(diag.length,30); };
+
+  /* ---------- persistence ---------- */
+  function persist(){
+    try{
+      const trades={}; OPHX.signals.forEach(s=>trades[s.id]=s.trades.slice(-200));
+      ST.set('medallion.trades',trades);
+      ST.set('synapse.ledger',OPHX.ledger.slice(0,200).map(r=>({sigId:r.sigId,assetId:r.assetId,side:r.side,
+        notional:r.notional,verdict:r.verdict,reasons:r.reasons,marginalVar:r.marginalVar,
+        outcomePnl:r.outcomePnl,t:r.t,grade:r.audit&&r.audit.grade,weight:r.audit&&r.audit.weight,open:false})));
+      ST.set('aladdin.limits',LIM_PCT);
+    }catch(_){}
+  }
+  function hydrate(){
+    try{
+      const tr=ST.get('medallion.trades',null);
+      if(tr) OPHX.signals.forEach(s=>{ if(Array.isArray(tr[s.id])) s.trades=tr[s.id]; });
+      const led=ST.get('synapse.ledger',null);
+      if(Array.isArray(led)&&led.length){
+        led.slice().reverse().forEach(r=>OPHX.ledger.unshift({...r,open:false,audit:{grade:r.grade||'?',weight:r.weight||0,n:0}}));
+        note('hydrated '+led.length+' ledger records (restored as closed)');
+      }
+    }catch(_){}
+  }
+
+  /* ---------- correlation from real shared history ---------- */
+  const logrets=p=>{ const r=[]; for(let i=1;i<p.length;i++) r.push(Math.log(p[i]/p[i-1])); return r; };
+  const mean=a=>a.reduce((s,x)=>s+x,0)/(a.length||1);
+  function pearson(a,b){
+    const n=Math.min(a.length,b.length); if(n<20) return 0;
+    const ax=a.slice(-n), bx=b.slice(-n), ma=mean(ax), mb=mean(bx);
+    let num=0,da=0,db=0;
+    for(let i=0;i<n;i++){ const x=ax[i]-ma,y=bx[i]-mb; num+=x*y; da+=x*x; db+=y*y; }
+    const d=Math.sqrt(da*db); return d? num/d : 0;
+  }
+  function validateCorr(C){
+    try{
+      const L=OPHX._math.cholesky(C); let err=0;
+      for(let i=0;i<L.length;i++)for(let j=0;j<L.length;j++){
+        let s=0; for(let k=0;k<L.length;k++) s+=L[i][k]*L[j][k];
+        err=Math.max(err,Math.abs(s-C[i][j]));
+      }
+      return err<1e-6;
+    }catch(_){ return false; }
+  }
+  function buildCorr(seriesMap,symbols,basis){
+    const R=symbols.map(s=>seriesMap[s]);
+    const n=symbols.length;
+    let C=Array.from({length:n},(_,i)=>Array.from({length:n},(_,j)=>{
+      if(i===j) return 1;
+      return Math.max(-0.95,Math.min(0.95,pearson(R[i],R[j])));
+    }));
+    for(let i=0;i<n;i++)for(let j=0;j<i;j++){ const v=(C[i][j]+C[j][i])/2; C[i][j]=C[j][i]=v; }
+    let shrunk=false;
+    if(!validateCorr(C)){
+      C=C.map((row,i)=>row.map((v,j)=>i===j?1:0.8*v));
+      shrunk=true; note('corr not PSD — applied 0.8C+0.2I shrinkage');
+      if(!validateCorr(C)){ note('corr STILL invalid — engine keeps prior matrix'); return null; }
+    }
+    corrInfoObj={basis,asOf:new Date().toISOString(),shrunk,n};
+    ST.set('aladdin.corr',{asOf:corrInfoObj.asOf,symbols,matrix:C,basis});
+    return C;
+  }
+
+  /* ---------- daily-close accumulator (grows toward true 90d) ---------- */
+  function accumDaily(assets){
+    const db=ST.get('aladdin.dailycloses',{});
+    const today=new Date().toISOString().slice(0,10);
+    assets.forEach(a=>{ (db[a.id]=db[a.id]||{})[today]=a.px; });
+    for(const s in db){ const ks=Object.keys(db[s]).sort(); while(ks.length>120){ delete db[s][ks.shift()]; } }
+    ST.set('aladdin.dailycloses',db);
+    const shared=assets.map(a=>Object.keys(db[a.id]||{}).length);
+    return {db,sharedDays:Math.min(...shared,120)};
+  }
+
+  /* ---------- master + portfolio sync (every Wall data cycle) ---------- */
+  function sync(coins){
+    if(!window.OPHX||!coins||!coins.length) return;
+    const top=coins.filter(c=>c.sparkline_in_7d&&c.sparkline_in_7d.price&&c.sparkline_in_7d.price.length>100)
+      .slice(0,12);
+    if(top.length<4) return;
+    const assets=top.map(c=>{
+      const r=logrets(c.sparkline_in_7d.price);
+      const volH=Math.sqrt(r.reduce((s,x)=>s+x*x,0)/r.length - Math.pow(mean(r),2));
+      return { id:c.symbol.toUpperCase(), name:c.name, factor:FACTORS(c.symbol),
+               px:c.current_price, vol:Math.max(0.05,Math.min(3,volH*Math.sqrt(24*365))), mu:0,
+               _rets:r };
+    });
+    const symbols=assets.map(a=>a.id);
+    /* corr: reuse fresh cache, else hourly basis, else daily when mature */
+    const {db,sharedDays}=accumDaily(assets);
+    let C=null;
+    const cache=ST.get('aladdin.corr',null);
+    if(cache&&cache.matrix&&JSON.stringify(cache.symbols)===JSON.stringify(symbols)
+       &&(Date.now()-Date.parse(cache.asOf))<24*3600*1000){
+      C=cache.matrix; corrInfoObj={basis:cache.basis,asOf:cache.asOf,shrunk:false,n:symbols.length};
+    } else if(sharedDays>=30){
+      const sm={}; assets.forEach(a=>{ const ks=Object.keys(db[a.id]).sort(); sm[a.id]=logrets(ks.map(k=>db[a.id][k])); });
+      C=buildCorr(sm,symbols,'daily-'+sharedDays+'d');
+    }
+    if(!C){
+      const sm={}; assets.forEach(a=>sm[a.id]=a._rets);
+      C=buildCorr(sm,symbols,'7d-hourly-168pt');
+    }
+    assets.forEach(a=>delete a._rets);
+    OPHX.master.assets=assets;
+    if(C) OPHX.master.corr=C;
+    /* portfolio ← Quant paper book (mutation authority stays with trade()) */
+    if(window.Quant&&Quant.equityNow){
+      OPHX.portfolio.nav=Quant.equityNow();
+      const book=Quant.bookPositions();
+      const pos={};
+      assets.forEach(a=>{ const P=book[a.id]; pos[a.id]=P?P.qty*a.px:0; });
+      OPHX.portfolio.positions=pos;
+    }
+    OPHX.limits.portfolioVar95Max=LIM_PCT.var95Pct*OPHX.portfolio.nav;
+    OPHX.limits.marginalVarMax=LIM_PCT.mVarPct*OPHX.portfolio.nav;
+    OPHX.limits.factorConcMax=LIM_PCT.factorConcMax;
+    OPHX.limits.minWeight=LIM_PCT.minWeight;
+  }
+
+  /* ---------- THE GATE: SYNAPSE verdicts, Quant mutation authority ---------- */
+  function gate(row,side,usd,seed){
+    if(!window.OPHX) return {ok:true};
+    const assetId=String(row.sym).toUpperCase();
+    if(!OPHX.master.get(assetId)) return {ok:true,note:'unmastered asset — legacy chain only'};
+    const sigId=SIGMAP((row.edges&&row.edges[0])||'');
+    _lastSig=sigId;
+    const snap=Object.assign({},OPHX.portfolio.positions);   /* engine may not mutate the book */
+    const rec=OPHX.propose(sigId,assetId,side>0?'BUY':'SELL',usd,seed);
+    OPHX.portfolio.positions=snap;                            /* revert — trade() owns mutation */
+    rec._external=true;
+    if(window.Bus) Bus.emit('omni:event',{sourceId:'synapse',timestamp:Date.now(),
+      title:rec.verdict+' · '+(side>0?'BUY':'SELL')+' '+assetId+' $'+Math.abs(rec.notional||usd).toLocaleString(),
+      body:(rec.reasons&&rec.reasons[0])||'',url:'#synapse',severity:rec.verdict==='VETOED'?2:1});
+    persist();
+    if(rec.verdict==='VETOED') return {ok:false,why:rec.reasons.join(' · ')};
+    if(rec.verdict==='SCALED') return {ok:true,scaledUsd:Math.abs(rec.notional),why:rec.reasons.join(' · ')};
+    return {ok:true,why:rec.reasons.join(' · ')};
+  }
+  function close(sym,sig,pnl){
+    try{
+      OPHX.recordOutcome(sig,pnl);
+      const rec=OPHX.ledger.find(r=>r.open&&r.assetId===String(sym).toUpperCase()&&r.sigId===sig);
+      if(rec){ rec.open=false; rec.outcomePnl=pnl; }
+      if(window.Bus) Bus.emit('omni:event',{sourceId:'synapse',timestamp:Date.now(),
+        title:'OUTCOME · '+sym+' '+(pnl>=0?'+':'−')+'$'+Math.round(Math.abs(pnl)).toLocaleString()+' → '+sig,
+        body:'fed to Medallion audit',url:'#synapse',severity:1});
+      persist();
+    }catch(_){}
+  }
+
+  /* ---------- on-demand full Monte Carlo (compute budget rules) ---------- */
+  function runFullMC(cb){
+    const go=paths=>{ try{ lastFull=OPHX.runMonteCarlo({paths,seed:Date.now()%100000}); }catch(_){}
+      if(cb) cb(lastFull); };
+    if(typeof requestIdleCallback==='function'){
+      let fired=false;
+      requestIdleCallback(()=>{ fired=true; go(10000); },{timeout:500});
+      setTimeout(()=>{ if(!fired) go(3000); },600);
+    } else setTimeout(()=>go(10000),20);
+  }
+
+  /* ---------- boot ---------- */
+  function init(){
+    if(!window.OPHX) return;
+    hydrate();
+    if(window.Wall&&Wall.onData){ Wall.onData(cs=>{ try{ sync(cs); }catch(_){}} ); const c0=Wall.getCoins&&Wall.getCoins(); if(c0&&c0.length) sync(c0); }
+    setInterval(persist,60000);
+    note('bridge armed · corr basis '+corrInfoObj.basis);
+  }
+  setTimeout(init,2500);
+
+  return { gate, close, sync, persist, hydrate, runFullMC,
+    lastFullMC:()=>lastFull||OPHX.lastMC, corrInfo:()=>corrInfoObj, limitsPct:()=>LIM_PCT,
+    lastSig:()=>_lastSig, diag:()=>diag,
+    _test:{ sync, gate:(row,side,usd,seed)=>gate(row,side,usd,seed), buildCorr, validateCorr } };
+})();
+</script>
+<script>
+/* ============================================================
+   DATACENTER WATCH — v3.4 · the 10th OMNIFEED feed
+   Adapter: user-supplied DATACENTER_REGISTRY (verbatim-adjacent).
+   Data: seed datasets recovered verbatim from the source session
+   (dc_country_stats.json + dc_facilities_seed.json, 2026-07-25).
+   Modes: same-origin data/dc_*.json (LIVE·FILE, refresh by
+   committing new JSONs to the repo) → embedded SEED fallback.
+   REST stub retained, disabled — licensed key only (Baxtel/DC Byte).
+   ============================================================ */
+window.Datacenter=(()=>{
+  const DC_COUNTRY_STATS={
+    "meta":{"dataset":"OPHANIM // Global Data Center Registry","version":"0.1.0-seed","generated":"2026-07-25",
+      "sources":[
+        {"name":"ABI Research (Cloud Research)","url":"https://www.abiresearch.com/blog/data-centers-by-region-size-company","as_of":"2026-03"},
+        {"name":"Cloudscene / Statista","url":"https://www.statista.com/chart/24149/data-centers-per-country/","as_of":"2026-05"},
+        {"name":"Cargoson (Cloudscene aggregation)","url":"https://www.cargoson.com/en/blog/number-of-data-centers-by-country","as_of":"2025-11"},
+        {"name":"Programs.com","url":"https://programs.com/resources/data-center-statistics/","as_of":"2026-03"},
+        {"name":"UltraEdge","url":"https://www.ultraedge.com/en/blog/how-many-data-centers-world","as_of":"2025-11"}],
+      "notes":"Figures vary 8,800-12,000+ globally depending on methodology (colo-closet inclusion, edge sites, gov facilities). Treat as directional, not census-grade. Refresh quarterly."},
+    "global_total_estimate":{"low":8821,"mid":11038,"high":12000,"unit":"operational facilities"},
+    "by_country":[
+      {"country":"United States","iso2":"US","count":5427,"pct_global":45,"as_of":"2026-05"},
+      {"country":"Germany","iso2":"DE","count":529,"as_of":"2026-05"},
+      {"country":"United Kingdom","iso2":"GB","count":523,"as_of":"2026-05"},
+      {"country":"China","iso2":"CN","count":449,"as_of":"2026-05"},
+      {"country":"France","iso2":"FR","count":344,"as_of":"2026-03"},
+      {"country":"Canada","iso2":"CA","count":337,"as_of":"2026-05"},
+      {"country":"India","iso2":"IN","count":155,"as_of":"2026-05"}],
+    "by_region":[
+      {"region":"North America","count":5767,"pct_global":48,"as_of":"2025-11"},
+      {"region":"Europe","count":3362,"countries_covered":45,"as_of":"2025-11"}],
+    "growth_signals":{"ai_capacity_crossover_year":2031,"capex_forecast_2030_usd":"7 trillion (cumulative build/upgrade spend to 2030)","power_demand_5yr_gw":219}
+  };
+  const DC_FACILITIES={
+    "meta":{"dataset":"OPHANIM // Named Facility Seed Set",
+      "note":"Curated from publicly known operator campus locations (press releases, operator sites). Coordinates are city/campus-level, not exact street addresses. This is a STARTER set for map plotting -- not exhaustive. Expand via dc_facilities_addon or a licensed Baxtel/DC Byte feed.",
+      "coordinate_precision":"campus-approximate",
+      "type_legend":{"hyperscale":"owned/operated by a single cloud giant for its own workloads","colo":"colocation - rents rack/cage space to many tenants","cloud_region":"named public cloud availability region anchor point"}},
+    "facilities":[
+      {"id":"us-ashburn-hub","name":"Data Center Alley (Ashburn/Loudoun County)","city":"Ashburn, VA","country":"US","lat":39.0438,"lon":-77.4874,"type":"colo","operators":["Equinix","Digital Realty","AWS us-east-1"],"note":"Highest DC density on earth; ~70% of world internet traffic estimated to pass through Loudoun County"},
+      {"id":"us-dalles","name":"Google The Dalles","city":"The Dalles, OR","country":"US","lat":45.5946,"lon":-121.1787,"type":"hyperscale","operators":["Google"]},
+      {"id":"us-quincy","name":"Microsoft Quincy","city":"Quincy, WA","country":"US","lat":47.2337,"lon":-119.8524,"type":"hyperscale","operators":["Microsoft Azure"]},
+      {"id":"us-prineville","name":"Meta Prineville","city":"Prineville, OR","country":"US","lat":44.3002,"lon":-120.8342,"type":"hyperscale","operators":["Meta"]},
+      {"id":"us-los-lunas","name":"Meta Los Lunas","city":"Los Lunas, NM","country":"US","lat":34.8064,"lon":-106.7334,"type":"hyperscale","operators":["Meta"]},
+      {"id":"us-chicago","name":"Chicago DC Corridor (Elk Grove/Franklin Park)","city":"Chicago, IL","country":"US","lat":41.8781,"lon":-87.6298,"type":"colo","operators":["Digital Realty","CyrusOne","QTS"]},
+      {"id":"us-el-paso","name":"Meta El Paso (AI-optimized)","city":"El Paso, TX","country":"US","lat":31.7619,"lon":-106.4850,"type":"hyperscale","operators":["Meta"]},
+      {"id":"ie-dublin","name":"Dublin Data Center Hub","city":"Dublin","country":"IE","lat":53.3498,"lon":-6.2603,"type":"colo","operators":["Equinix","Digital Realty","AWS eu-west-1","Microsoft","Google"]},
+      {"id":"gb-slough","name":"London/Slough Corridor","city":"Slough","country":"GB","lat":51.5105,"lon":-0.5950,"type":"colo","operators":["Equinix","Digital Realty"]},
+      {"id":"de-frankfurt","name":"Frankfurt DC Hub","city":"Frankfurt","country":"DE","lat":50.1109,"lon":8.6821,"type":"colo","operators":["Equinix (FR hub)","Digital Realty","AWS eu-central-1"]},
+      {"id":"nl-amsterdam","name":"Amsterdam DC Hub","city":"Amsterdam","country":"NL","lat":52.3676,"lon":4.9041,"type":"colo","operators":["Equinix AM","AWS eu-west-2 region area"]},
+      {"id":"fr-paris","name":"Paris DC Hub","city":"Paris","country":"FR","lat":48.8566,"lon":2.3522,"type":"colo","operators":["Equinix PA","Interxion"]},
+      {"id":"sg-singapore","name":"Singapore DC Hub","city":"Singapore","country":"SG","lat":1.3521,"lon":103.8198,"type":"colo","operators":["Equinix SG","AWS ap-southeast-1","Google","Microsoft"]},
+      {"id":"jp-tokyo","name":"Tokyo DC Hub","city":"Tokyo","country":"JP","lat":35.6762,"lon":139.6503,"type":"colo","operators":["Equinix TY","AWS ap-northeast-1"]},
+      {"id":"hk-hongkong","name":"Hong Kong DC Hub","city":"Hong Kong","country":"HK","lat":22.3193,"lon":114.1694,"type":"colo","operators":["Equinix HK"]},
+      {"id":"in-mumbai","name":"Mumbai DC Hub","city":"Mumbai","country":"IN","lat":19.0760,"lon":72.8777,"type":"colo","operators":["AWS ap-south-1","Microsoft","Reliance/NTT"]},
+      {"id":"in-chennai","name":"Chennai DC Hub","city":"Chennai","country":"IN","lat":13.0827,"lon":80.2707,"type":"colo","operators":["Google","AWS"]},
+      {"id":"au-sydney","name":"Sydney DC Hub","city":"Sydney","country":"AU","lat":-33.8688,"lon":151.2093,"type":"colo","operators":["Equinix SY","AWS ap-southeast-2"]},
+      {"id":"za-johannesburg","name":"Johannesburg DC Hub","city":"Johannesburg","country":"ZA","lat":-26.2041,"lon":28.0473,"type":"colo","operators":["Teraco","AWS af-south-1"]},
+      {"id":"br-saopaulo","name":"Sao Paulo DC Hub","city":"Sao Paulo","country":"BR","lat":-23.5505,"lon":-46.6333,"type":"colo","operators":["Equinix SP","AWS sa-east-1"]},
+      {"id":"ae-dubai","name":"Dubai DC Hub","city":"Dubai","country":"AE","lat":25.2048,"lon":55.2708,"type":"colo","operators":["Equinix DX","Khazna","Microsoft UAE"]},
+      {"id":"us-texas-stargate","name":"Stargate/OpenAI Abilene Campus","city":"Abilene, TX","country":"US","lat":32.4487,"lon":-99.7331,"type":"hyperscale","operators":["OpenAI/Oracle/SoftBank Stargate JV"]}
+    ]
+  };
+
+  /* ---------- user-supplied adapter (verbatim-adjacent; module.exports dropped) ---------- */
+  const MODE={STATIC_JSON:"static_json",REST_API:"rest_api"};
+  class DatacenterRegistryAdapter{
+    constructor({mode=MODE.STATIC_JSON,countryStatsPath,facilitiesPath,apiConfig=null}={}){
+      this.mode=mode; this.countryStatsPath=countryStatsPath; this.facilitiesPath=facilitiesPath;
+      this.apiConfig=apiConfig; this.lastGoodPayload=null; this.lastFetchTs=null; this.healthy=false; this.source=null;
+    }
+    async fetch(){
+      try{
+        const payload=this.mode===MODE.STATIC_JSON? await this._fetchStatic() : await this._fetchRest();
+        const normalized=this._normalize(payload.data);
+        this._validate(normalized);
+        this.lastGoodPayload=normalized; this.lastFetchTs=new Date().toISOString();
+        this.healthy=true; this.source=payload.source;
+        return normalized;
+      }catch(err){ this.healthy=false; return this._selfHeal(err); }
+    }
+    async _fetchStatic(){
+      try{
+        const [countryStats,facilities]=await Promise.all([this._loadJson(this.countryStatsPath),this._loadJson(this.facilitiesPath)]);
+        return {data:{countryStats,facilities},source:'file'};
+      }catch(_){
+        return {data:{countryStats:DC_COUNTRY_STATS,facilities:DC_FACILITIES},source:'seed'};   /* embedded fallback — single-file doctrine */
+      }
+    }
+    async _loadJson(path){
+      const ctl=new AbortController(); const t=setTimeout(()=>ctl.abort(),3000);
+      try{
+        const res=await fetch(path,{signal:ctl.signal});
+        if(!res.ok) throw new Error(`DATACENTER_REGISTRY: failed to load ${path} (${res.status})`);
+        return await res.json();
+      } finally{ clearTimeout(t); }
+    }
+    async _fetchRest(){
+      if(!this.apiConfig||!this.apiConfig.apiKey)
+        throw new Error("DATACENTER_REGISTRY: REST_API mode requires a licensed apiConfig.apiKey (e.g. Baxtel/DC Byte). None supplied.");
+      const res=await fetch(`${this.apiConfig.baseUrl}/facilities`,{headers:{Authorization:`Bearer ${this.apiConfig.apiKey}`}});
+      if(!res.ok) throw new Error(`DATACENTER_REGISTRY: REST fetch failed (${res.status})`);
+      return {data:await res.json(),source:'rest'};
+    }
+    _normalize({countryStats,facilities}){
+      return {
+        schema:"ophanim.datacenter_registry.v1",
+        asOf:countryStats?.meta?.generated||null,
+        globalEstimate:countryStats?.global_total_estimate||null,
+        byCountry:(countryStats?.by_country||[]).map(c=>({country:c.country,iso2:c.iso2,count:c.count,asOf:c.as_of})),
+        markers:(facilities?.facilities||[]).map(f=>({id:f.id,name:f.name,lat:f.lat,lon:f.lon,type:f.type,operators:f.operators||[],country:f.country,city:f.city,note:f.note}))
+      };
+    }
+    _validate(n){
+      if(!n.markers||n.markers.length===0) throw new Error("DATACENTER_REGISTRY: normalized payload has zero markers -- likely a silent parse failure.");
+      if(!n.byCountry||n.byCountry.length===0) throw new Error("DATACENTER_REGISTRY: normalized payload has zero country stats.");
+      for(const m of n.markers){ if(typeof m.lat!=="number"||typeof m.lon!=="number") throw new Error(`DATACENTER_REGISTRY: marker ${m.id} missing valid coordinates.`); }
+    }
+    _selfHeal(err){
+      console.warn("[OMNIFEED:DATACENTER_REGISTRY] fetch failed, falling back to last-known-good.",err.message);
+      if(this.lastGoodPayload) return {...this.lastGoodPayload,stale:true,staleSince:this.lastFetchTs};
+      return {schema:"ophanim.datacenter_registry.v1",asOf:null,globalEstimate:null,byCountry:[],markers:[],stale:true,error:err.message};
+    }
+    status(){ return {healthy:this.healthy,lastFetchTs:this.lastFetchTs,markerCount:this.lastGoodPayload?.markers?.length||0}; }
+  }
+
+  /* ---------- OPHANIM wiring ---------- */
+  const adapter=new DatacenterRegistryAdapter({countryStatsPath:'data/dc_country_stats.json',facilitiesPath:'data/dc_facilities_seed.json'});
+  let payload=null, mounted=false, map=null, visible=true;
+  function pushHealth(){
+    if(!window.OmniFeed||!OmniFeed.updateDerived) return;
+    OmniFeed.updateDerived('datacenter-registry',{
+      status:adapter.healthy?'ok':'warn',
+      items:(payload&&payload.markers)?payload.markers.length:0,
+      err:(adapter.source==='seed'?'SEED · embedded 2026-07 vintage — refresh via repo data/dc_*.json':
+           adapter.source==='file'?'LIVE·FILE · same-origin data/dc_*.json':
+           (payload&&payload.error)||null)});
+  }
+  function fc(){ return {type:'FeatureCollection',features:(payload?payload.markers:[]).map(m=>({
+    type:'Feature',geometry:{type:'Point',coordinates:[m.lon,m.lat]},
+    properties:{id:m.id,name:m.name,city:m.city,type:m.type,ops:(m.operators||[]).join(', '),note:m.note||''}}))};
+  }
+  function mountLayer(m){
+    map=m; if(mounted||!map||!payload) return; mounted=true;
+    try{
+      map.addSource('dc-pts',{type:'geojson',data:fc()});
+      map.addLayer({id:'dc-glow',type:'circle',source:'dc-pts',paint:{'circle-radius':['match',['get','type'],'hyperscale',9,6],'circle-color':'#35C4F0','circle-opacity':0.12,'circle-blur':1}});
+      map.addLayer({id:'dc-core',type:'circle',source:'dc-pts',paint:{'circle-radius':['match',['get','type'],'hyperscale',3.5,2.5],'circle-color':'#35C4F0','circle-opacity':0.9,'circle-stroke-width':1,'circle-stroke-color':'rgba(53,196,240,.35)'}});
+      map.on('click','dc-core',e=>{
+        const p=e.features[0].properties;
+        const cs=(payload.byCountry||[]).slice(0,3).map(c=>c.iso2+' '+c.count.toLocaleString()).join(' · ');
+        try{ new maplibregl.Popup({className:'ge-pop'}).setLngLat(e.lngLat).setHTML(
+          '<b>'+p.name+'</b><br><span>'+p.city+' · '+String(p.type).toUpperCase()+'</span><br><span style="color:#9D7BFF">'+p.ops+'</span>'
+          +(p.note?'<br><span style="color:#5F7592">'+p.note+'</span>':'')
+          +'<br><span style="color:#5F7592">GLOBAL ~'+(payload.globalEstimate?payload.globalEstimate.mid.toLocaleString():'?')+' facilities · '+cs+'</span>').addTo(map); }catch(_){}
+      });
+      map.on('mouseenter','dc-core',()=>{ map.getCanvas().style.cursor='pointer'; });
+      setVisible(visible);
+    }catch(_){}
+  }
+  function setVisible(on){
+    visible=on; if(!mounted||!map) return;
+    ['dc-glow','dc-core'].forEach(l=>{ try{ map.setLayoutProperty(l,'visibility',on?'visible':'none'); }catch(_){} });
+  }
+  async function start(){
+    if(window.OmniFeed&&OmniFeed.addSource&&!OmniFeed.getSource('datacenter-registry'))
+      OmniFeed.addSource({id:'datacenter-registry',name:'Datacenter Registry',category:'infra',adapter:'derived',
+        url:'internal://datacenter-registry',pollInterval:0,enabled:true,
+        note:'10th feed · static registry (22 hubs + country stats) · REST stub disabled until licensed key.'});
+    payload=await adapter.fetch();
+    pushHealth();
+    if(map&&!mounted) mountLayer(map);
+    if(mounted){ try{ const s=map.getSource('dc-pts'); if(s) s.setData(fc()); }catch(_){} }
+  }
+  setTimeout(start,5500);
+  return { mountLayer, setVisible, adapter, payload:()=>payload, stats:()=>DC_COUNTRY_STATS,
+    _test:{ start, MODE, DatacenterRegistryAdapter,
+      validate:n=>adapter._validate(n), selfHeal:e=>adapter._selfHeal(e),
+      normalize:d=>adapter._normalize(d), seeds:{DC_COUNTRY_STATS,DC_FACILITIES} } };
 })();
 </script>
 </body>
