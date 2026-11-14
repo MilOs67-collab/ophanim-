@@ -1,18 +1,18 @@
 {
  "run": "nightly",
- "date": "2026-11-13",
- "started": "2026-11-13T14:35:38Z",
- "finished": "2026-11-13T14:45:05Z",
+ "date": "2026-11-14",
+ "started": "2026-11-14T13:31:38Z",
+ "finished": "2026-11-14T14:05:46Z",
  "ok": 14,
- "failed": 1,
- "skipped": 2,
+ "failed": 2,
+ "skipped": 1,
  "sources": [
   {
    "source": "fred",
    "ok": true,
-   "added": 33,
-   "updated": 14,
-   "seconds": 22.6,
+   "added": 14,
+   "updated": 0,
+   "seconds": 26.0,
    "skipped": false,
    "error": null,
    "notes": []
@@ -22,7 +22,7 @@
    "ok": true,
    "added": 2,
    "updated": 0,
-   "seconds": 39.0,
+   "seconds": 35.5,
    "skipped": false,
    "error": null,
    "notes": []
@@ -32,7 +32,7 @@
    "ok": true,
    "added": 1,
    "updated": 0,
-   "seconds": 1.9,
+   "seconds": 1.6,
    "skipped": false,
    "error": null,
    "notes": []
@@ -42,7 +42,7 @@
    "ok": true,
    "added": 1,
    "updated": 0,
-   "seconds": 0.8,
+   "seconds": 0.5,
    "skipped": false,
    "error": null,
    "notes": []
@@ -62,7 +62,7 @@
   {
    "source": "sec_filings",
    "ok": true,
-   "added": 213,
+   "added": 258,
    "updated": 18,
    "seconds": 8.6,
    "skipped": false,
@@ -72,21 +72,19 @@
   {
    "source": "sec_financials",
    "ok": true,
-   "added": 0,
+   "added": 61638,
    "updated": 0,
-   "seconds": 0.0,
-   "skipped": true,
+   "seconds": 14.7,
+   "skipped": false,
    "error": null,
-   "notes": [
-    "weekly (Saturdays) \u2014 skipped"
-   ]
+   "notes": []
   },
   {
    "source": "crypto_coinbase",
    "ok": true,
    "added": 12,
    "updated": 0,
-   "seconds": 4.5,
+   "seconds": 3.5,
    "skipped": false,
    "error": null,
    "notes": []
@@ -104,9 +102,9 @@
   {
    "source": "bitcoin_chain",
    "ok": true,
-   "added": 120,
-   "updated": 28,
-   "seconds": 11.8,
+   "added": 117,
+   "updated": 32,
+   "seconds": 7.9,
    "skipped": false,
    "error": null,
    "notes": []
@@ -116,7 +114,7 @@
    "ok": true,
    "added": 14,
    "updated": 4,
-   "seconds": 17.5,
+   "seconds": 16.5,
    "skipped": false,
    "error": null,
    "notes": []
@@ -124,9 +122,9 @@
   {
    "source": "social",
    "ok": true,
-   "added": 22,
+   "added": 16,
    "updated": 0,
-   "seconds": 1.1,
+   "seconds": 1.4,
    "skipped": false,
    "error": null,
    "notes": [
@@ -136,20 +134,25 @@
   },
   {
    "source": "space",
-   "ok": true,
-   "added": 4,
+   "ok": false,
+   "added": 1,
    "updated": 0,
-   "seconds": 27.2,
+   "seconds": 1504.2,
    "skipped": false,
-   "error": null,
-   "notes": []
+   "error": "FetchError: all 4 requests failed \u2014 https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle -> URLError(TimeoutError('timed out'))",
+   "notes": [
+    "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle -> URLError(TimeoutError('timed out'))",
+    "https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=tle -> URLError(TimeoutError('timed out'))",
+    "https://celestrak.org/NORAD/elements/gp.php?GROUP=gps-ops&FORMAT=tle -> URLError(TimeoutError('timed out'))",
+    "https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=tle -> URLError(TimeoutError('timed out'))"
+   ]
   },
   {
    "source": "air",
    "ok": true,
    "added": 109,
    "updated": 1,
-   "seconds": 1.9,
+   "seconds": 1.6,
    "skipped": false,
    "error": null,
    "notes": []
@@ -159,7 +162,7 @@
    "ok": true,
    "added": 10,
    "updated": 0,
-   "seconds": 310.1,
+   "seconds": 300.7,
    "skipped": false,
    "error": null,
    "notes": []
@@ -167,13 +170,13 @@
   {
    "source": "gdelt_events",
    "ok": true,
-   "added": 225,
+   "added": 223,
    "updated": 0,
-   "seconds": 0.8,
+   "seconds": 1.2,
    "skipped": false,
    "error": null,
    "notes": [
-    "1 files, 120,768 events this run \u00b7 5064/5088 files done \u00b7 0 left \u00b7 24 missing at source"
+    "1 files, 111,095 events this run \u00b7 5065/5089 files done \u00b7 0 left \u00b7 24 missing at source"
    ]
   },
   {
@@ -181,7 +184,7 @@
    "ok": false,
    "added": 0,
    "updated": 0,
-   "seconds": 119.5,
+   "seconds": 123.2,
    "skipped": false,
    "error": "FetchError: all 24 requests failed \u2014 markets/timelinetone: https://api.gdeltproject.org/api/v2/doc/doc?query=%22stock%20market%22%20sourcelang%3Aeng&mode=timelinetone&format=json&timespan=3d -> HTTP 429",
    "notes": [

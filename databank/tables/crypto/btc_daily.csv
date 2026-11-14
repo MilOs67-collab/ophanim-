@@ -1,3 +1,4 @@
 date,tip_height,fee_fastest,fee_halfhour,fee_hour,fee_economy,mempool_count,mempool_vsize,mempool_total_fee
 2026-11-12,975566,2,1,1,1,74026,33276367,6264477
 2026-11-13,975685,1,1,1,1,62105,30470443,4564164
+2026-11-14,975801,1,1,1,1,58954,32768057,3862912
