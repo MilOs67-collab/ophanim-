@@ -228,6 +228,15 @@ class Fake:
         if age not in (1, 2) or (age, slot) in ((1, "120000"), (2, "234500")):
             raise C.FetchError(f"{url} -> HTTP 404")
         t = ds + slot
+        if kind.startswith("translation."):  # GDELT Translingual: one French-language story per slot
+            kind = kind[len("translation."):]
+            tr = "srclc:fra;eng:GT-FRA 1.0"
+            if kind == "export.CSV.zip":
+                return gd_zip([e2_line(t + "3", "FR", "05", "2", 2.0, 4, 2, 1.5)])
+            if kind == "mentions.CSV.zip":
+                return gd_zip([m2_line(t + "3", t, t, "lemonde.fr", 1.5, 50, "1", tr)])
+            return gd_zip([k2_line("ECON_INFLATION", "banque de france", "4#Paris#FR#FR11#48.8#2.3#1",
+                                   tone="1.5,3,1.5,4.5,0,0,10", src="lemonde.fr", trans=tr)])
         if kind == "export.CSV.zip":
             return gd_zip([e2_line(t + "1", "US", "04", "1", 3.0, 10, 4, -2.0),
                            e2_line(t + "2", "UP", "19", "4", -9.0, 30, 2, -8.0), "garbage"])
@@ -715,22 +724,24 @@ class TestGdeltV2(Base):
         ew = {r["date"]: r for r in self.rows("news", "gdelt2", "events", "world_daily.csv")}
         d1, d2 = self.D1.isoformat(), self.D2.isoformat()
         self.assertEqual(set(ew), {d1, d2})
-        self.assertEqual((ew[d1]["events"], ew[d1]["slots"]), ("190", "95"))
+        self.assertEqual((ew[d1]["events"], ew[d1]["slots"], ew[d1]["slots_translated"]), ("285", "95", "95"))
         cc = {r["country"] for r in self.rows("news", "gdelt2", "events", "by_country", f"{d1[:7]}.csv")
               if r["date"] == d1}
-        self.assertEqual(cc, {"US", "UP"})
+        self.assertEqual(cc, {"US", "UP", "FR"})
         mw = {r["date"]: r for r in self.rows("news", "gdelt2", "mentions", "world_daily.csv")}
         self.assertEqual((mw[d1]["mentions"], mw[d1]["events_mentioned"], mw[d1]["matched_share"],
-                          mw[d1]["echo_share"]), ("190", "96", "0.5", "0.5"))
+                          mw[d1]["echo_share"], mw[d1]["translated_share"]),
+                         ("285", "191", "0.6667", "0.3333", "0.6667"))
         mcc = [r for r in self.rows("news", "gdelt2", "mentions", "by_country", f"{d1[:7]}.csv") if r["date"] == d1]
-        self.assertEqual([(r["country"], r["mentions"], r["amplification"]) for r in mcc], [("US", "95", "1")])
+        self.assertEqual(sorted((r["country"], r["mentions"], r["amplification"]) for r in mcc),
+                         [("FR", "95", "1"), ("US", "95", "1")])
         gw = {r["date"]: r for r in self.rows("news", "gdelt2", "gkg", "world_daily.csv")}
-        self.assertEqual((gw[d1]["articles"], gw[d1]["tone"]), ("95", "-2.5"))
+        self.assertEqual((gw[d1]["articles"], gw[d1]["tone"], gw[d1]["translated_share"]), ("190", "-0.5", "0.5"))
         th = {r["theme"]: r["articles"] for r in self.rows("news", "gdelt2", "gkg", "themes", f"{d1[:7]}.csv")
               if r["date"] == d1}
-        self.assertEqual(th, {"ECON_STOCKMARKET": "95", "TAX_FNCACT": "95"})
+        self.assertEqual(th, {"ECON_STOCKMARKET": "95", "TAX_FNCACT": "95", "ECON_INFLATION": "95"})
         orgs = {r["org"] for r in self.rows("news", "gdelt2", "gkg", "orgs", f"{d1[:7]}.csv")}
-        self.assertEqual(orgs, {"goldman sachs", "acme widgets"})
+        self.assertEqual(orgs, {"goldman sachs", "acme widgets", "banque de france"})
         with open(os.path.join(self.bank, "state", "gdelt_v2.json")) as f:
             state = json.load(f)
         # Complete day (gap is final after 2 days) is banked; yesterday's gap and the empty day are retried.

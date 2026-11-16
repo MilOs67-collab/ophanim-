@@ -4,6 +4,8 @@ GDELT 2.0 publishes three zipped files every 15 minutes (96 a day):
   YYYYMMDDHHMMSS.export.CSV.zip    every new event, 61 tab-separated columns
   YYYYMMDDHHMMSS.mentions.CSV.zip  every article that mentions an event (new or old), 16 columns
   YYYYMMDDHHMMSS.gkg.csv.zip       every article: themes, organizations, places, tone, 27 columns
+...for English-language sources, plus the same three as YYYYMMDDHHMMSS.translation.*.zip for GDELT
+Translingual (sources in 65 other languages, machine-translated). Both streams are counted together.
 
 Raw volume is ~1-2 GB a day, far too big for the repo, so each complete UTC day is read in full and
 boiled down to daily tables (the same doctrine as gdelt_events for GDELT 1.0). A day is the unit of
@@ -29,6 +31,9 @@ FIRST_DAY = dt.date(2015, 2, 19)   # GDELT 2.0 begins mid-Feb 2015
 NIGHTLY_LOOKBACK = 3               # nightly re-checks the last 3 complete days (self-heals missed nights)
 SLOTS = [f"{h:02d}{m:02d}00" for h in range(24) for m in (0, 15, 30, 45)]  # 96 per day
 DAY_ERR_LIMIT = 4                  # non-404 failures in one day before giving the day up for this run
+# GDELT publishes two parallel streams: English-language sources, and GDELT Translingual (machine-translated
+# coverage from 65 languages) as YYYYMMDDHHMMSS.translation.<kind>.zip. Both are read and counted together.
+VARIANTS = ("", "translation.")
 
 # Events export, 0-based. Same as 1.0 except each geo block gained ADM2Code (+1 each), so the
 # action-location country moves from 51 to 53, and DATEADDED/SOURCEURL follow at 59/60.
@@ -254,7 +259,7 @@ def _lines(raw):
     return G1._read_zip(raw)
 
 
-def _day_files(ctx, day, kind, consume, t):
+def _day_files(ctx, day, kind, consume, t, variant=""):
     """Feed every 15-minute file of `kind` for `day` to consume(lines). Returns (slots_ok, missing, errs)."""
     ds = day.strftime("%Y%m%d")
     old = (ctx.today - day).days > 7
@@ -262,7 +267,7 @@ def _day_files(ctx, day, kind, consume, t):
     for i, s in enumerate(SLOTS):
         if old and i == 8 and ok == 0 and missing == 8:
             return 0, len(SLOTS), errs  # an old day GDELT never published: don't knock 88 more times
-        name = f"{ds}{s}.{kind}.zip"
+        name = f"{ds}{s}.{variant}{kind}.zip"
         try:
             raw = C.fetch(BASE + name, timeout=180, retries=3)
         except C.FetchError as e:
@@ -280,6 +285,15 @@ def _day_files(ctx, day, kind, consume, t):
             continue
         ok += 1
     return ok, missing, errs
+
+
+def _both(ctx, day, kind, consume, t):
+    """English + translated files for one kind. Returns (slots_en, slots_tr, worst_missing, errs)."""
+    ok_en, miss_en, errs = _day_files(ctx, day, kind, consume, t, VARIANTS[0])
+    if errs:
+        return 0, 0, 0, errs
+    ok_tr, miss_tr, errs = _day_files(ctx, day, kind, consume, t, VARIANTS[1])
+    return ok_en, ok_tr, max(miss_en, miss_tr), errs
 
 
 def _final(ctx, day, ok, missing):
@@ -380,22 +394,24 @@ def gdelt_v2(ctx, t):
 
     def do_day(day):
         ev = EventsDay(day)
-        ok_e, miss_e, errs = _day_files(ctx, day, "export.CSV", ev.add, t)
+        ok_e, tr_e, miss_e, errs = _both(ctx, day, "export.CSV", ev.add, t)
         if errs:
             return 0, 0, 0, errs
         mn = MentionsDay(day, ev.cc_of)
-        ok_m, miss_m, errs = _day_files(ctx, day, "mentions.CSV", mn.add, t)
+        ok_m, tr_m, miss_m, errs = _both(ctx, day, "mentions.CSV", mn.add, t)
         if errs:
             return 0, 0, 0, errs
         erows = ev.rows()
         if erows:
-            world = [dict(r, slots=ok_e) for r in erows if r["country"] == "WORLD"]
-            _put(ctx, t, ["events", "world_daily.csv"], world, ("date", "country"), G1.COLS + ["slots"])
+            world = [dict(r, slots=ok_e, slots_translated=tr_e) for r in erows if r["country"] == "WORLD"]
+            _put(ctx, t, ["events", "world_daily.csv"], world, ("date", "country"),
+                 G1.COLS + ["slots", "slots_translated"])
             _put_monthly(ctx, t, ["events", "by_country"], [r for r in erows if r["country"] != "WORLD"],
                          ("date", "country"), G1.COLS)
         if mn.n:
             w, cc, srcs = mn.rows(ok_m)
-            _put(ctx, t, ["mentions", "world_daily.csv"], w, ("date",), MENTION_WORLD_COLS)
+            w[0]["slots_translated"] = tr_m
+            _put(ctx, t, ["mentions", "world_daily.csv"], w, ("date",), MENTION_WORLD_COLS + ["slots_translated"])
             _put_monthly(ctx, t, ["mentions", "by_country"], cc, ("date", "country"), MENTION_CC_COLS)
             _put_monthly(ctx, t, ["mentions", "top_sources"], srcs, ("date", "source"),
                          ["date", "source", "mentions", "tone"])
@@ -403,7 +419,7 @@ def gdelt_v2(ctx, t):
             if bad:
                 t.notes.append(f"{day} {name}: skipped {bad} malformed lines")
         events = sum(r["events"] for r in erows if r["country"] == "WORLD")
-        return events + mn.n, min(ok_e, ok_m), max(miss_e, miss_m), []
+        return events + mn.n, min(ok_e, ok_m) + min(tr_e, tr_m), max(miss_e, miss_m), []
 
     _run(ctx, t, "core", "GDELT_V2_MINUTES", "20", "280", FIRST_DAY, do_day)
 
@@ -415,18 +431,19 @@ def gdelt_gkg(ctx, t):
 
     def do_day(day):
         g = GkgDay(day, K.GKG_TRACK_ORGS)
-        ok, miss, errs = _day_files(ctx, day, "gkg.csv", g.add, t)
+        ok, tr, miss, errs = _both(ctx, day, "gkg.csv", g.add, t)
         if errs:
             return 0, 0, 0, errs
         if g.n:
             w, cc, themes, orgs = g.rows(ok)
-            _put(ctx, t, ["gkg", "world_daily.csv"], w, ("date",), GKG_WORLD_COLS)
+            w[0]["slots_translated"] = tr
+            _put(ctx, t, ["gkg", "world_daily.csv"], w, ("date",), GKG_WORLD_COLS + ["slots_translated"])
             _put_monthly(ctx, t, ["gkg", "by_country"], cc, ("date", "country"), ["date", "country"] + GKG_COUNT_COLS)
             _put_monthly(ctx, t, ["gkg", "themes"], themes, ("date", "theme"), ["date", "theme"] + GKG_COUNT_COLS)
             _put_monthly(ctx, t, ["gkg", "orgs"], orgs, ("date", "org"), ["date", "org"] + GKG_COUNT_COLS)
         if g.bad:
             t.notes.append(f"{day} gkg: skipped {g.bad} malformed lines")
-        return g.n, ok, miss, []
+        return g.n, ok + tr, miss, []
 
     hist = int(ctx.env.get("GDELT_GKG_HISTORY_DAYS", "30"))
     _run(ctx, t, "gkg", "GDELT_GKG_MINUTES", "30", "280", ctx.today - dt.timedelta(days=hist), do_day)
@@ -445,7 +462,15 @@ def _prev_slot_url(url):
 
 def probe():
     """Fetch GDELT's newest real files and prove every parser reads them. Exit 1 on any doubt."""
-    txt = C.fetch_text(BASE + "lastupdate.txt", timeout=60)
+    rc = _probe_one("lastupdate.txt", "English")
+    rc |= _probe_one("lastupdate-translation.txt", "Translingual (65 languages)")
+    print("PROBE", "FAILED" if rc else "PASSED")
+    return rc
+
+
+def _probe_one(listing, label):
+    print(f"--- {label}: {listing}")
+    txt = C.fetch_text(BASE + listing, timeout=60)
     urls = {}
     for line in txt.splitlines():
         p = line.split()
@@ -455,7 +480,7 @@ def probe():
                     urls[kind] = (p[2], int(p[0]))
     problems = []
     if set(urls) != {"export", "mentions", "gkg"}:
-        print("lastupdate.txt:", txt)
+        print(listing, txt)
         return 1
     day = dt.date.today()
     try:
@@ -510,10 +535,11 @@ def probe():
         problems.append(f"gkg: {g.n} parsed, {g.bad} malformed")
     if len(g.themes) < 50 or len(g.cc) < 10:
         problems.append("gkg: too few themes/countries — column offsets wrong?")
+    if "Translingual" in label and (gw[0]["translated_share"] or 0) < 0.5:
+        problems.append("gkg: translation stream should be mostly translated articles")
 
     for p in problems:
         print("PROBLEM:", p)
-    print("PROBE", "FAILED" if problems else "PASSED")
     return 1 if problems else 0
 
 
