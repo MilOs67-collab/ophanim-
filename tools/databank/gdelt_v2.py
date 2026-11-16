@@ -471,6 +471,7 @@ def probe():
 def _probe_one(listing, label):
     print(f"--- {label}: {listing}")
     txt = C.fetch_text(BASE + listing, timeout=60)
+    print(txt.strip())
     urls = {}
     for line in txt.splitlines():
         p = line.split()
@@ -489,7 +490,11 @@ def _probe_one(listing, label):
         print(f"newest slot not served yet ({e}); using the slot before it")
         prev = lambda u: _prev_slot_url(u)
         urls = {k: (prev(u), None) for k, (u, _) in urls.items()}
-        raw = {k: C.fetch(u, timeout=180) for k, (u, _) in urls.items()}
+        try:
+            raw = {k: C.fetch(u, timeout=180) for k, (u, _) in urls.items()}
+        except C.FetchError as e2:
+            print(f"PROBLEM: {label}: listed files are not downloadable ({e2})")
+            return 1
     for k, (u, size) in urls.items():
         print(f"{k:9s} {len(raw[k]) / 1e6:7.2f} MB  {u}")
         if size is not None and len(raw[k]) != size:

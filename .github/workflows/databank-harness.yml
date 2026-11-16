@@ -34,6 +34,7 @@ jobs:
           python-version: "3.12"
       - run: python -m tools.databank.gdelt_v2 --probe
       - name: Full-day dry run on real GDELT data (scratch bank, nothing committed)
+        if: always()
         env:
           GDELT_V2_MINUTES: "1"
           GDELT_GKG_MINUTES: "1"
