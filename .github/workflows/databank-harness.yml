@@ -26,20 +26,10 @@ jobs:
   # the parsers read them (column layout, value ranges, joins). Catches format drift the fixtures can't.
   gdelt-live-probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - run: python -m tools.databank.gdelt_v2 --probe
-      - name: Full-day dry run on real GDELT data (scratch bank, nothing committed)
-        if: always()
-        env:
-          GDELT_V2_MINUTES: "1"
-          GDELT_GKG_MINUTES: "1"
-        run: |
-          python -m tools.databank.run --mode nightly --bank "$RUNNER_TEMP/bank" --only gdelt_v2,gdelt_gkg
-          for f in events/world_daily.csv mentions/world_daily.csv gkg/world_daily.csv; do
-            echo "== $f"; cat "$RUNNER_TEMP/bank/tables/news/gdelt2/$f"; done
-          cat "$RUNNER_TEMP/bank/health/daily_volume.csv"

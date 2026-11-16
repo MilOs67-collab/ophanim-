@@ -484,17 +484,17 @@ def _probe_one(listing, label):
         print(listing, txt)
         return 1
     day = dt.date.today()
-    try:
-        raw = {k: C.fetch(u, timeout=180) for k, (u, _) in urls.items()}
-    except C.FetchError as e:  # lastupdate.txt can name a file a few seconds before it is served
-        print(f"newest slot not served yet ({e}); using the slot before it")
-        prev = lambda u: _prev_slot_url(u)
-        urls = {k: (prev(u), None) for k, (u, _) in urls.items()}
+    raw = None
+    for back in range(5):  # the listing can name files minutes before they are served (Translingual lags most)
         try:
-            raw = {k: C.fetch(u, timeout=180) for k, (u, _) in urls.items()}
-        except C.FetchError as e2:
-            print(f"PROBLEM: {label}: listed files are not downloadable ({e2})")
-            return 1
+            raw = {k: C.fetch(u, timeout=180, retries=1) for k, (u, _) in urls.items()}
+            break
+        except C.FetchError as e:
+            print(f"slot not served yet ({e}); stepping back 15 minutes")
+            urls = {k: (_prev_slot_url(u), None) for k, (u, _) in urls.items()}
+    if raw is None:
+        print(f"PROBLEM: {label}: no downloadable slot in the last hour")
+        return 1
     for k, (u, size) in urls.items():
         print(f"{k:9s} {len(raw[k]) / 1e6:7.2f} MB  {u}")
         if size is not None and len(raw[k]) != size:
