@@ -548,8 +548,25 @@ def _probe_one(listing, label):
     return 1 if problems else 0
 
 
+def history_left(bank, today=None, gkg_days=30):
+    """Days of GDELT 2.0 history not yet banked: (events+mentions back to 2015, GKG last `gkg_days`)."""
+    ctx = C.Context(bank, None, "backfill", today=today, env={})
+    st = _load(ctx)
+    core = _pending(ctx, set(st.get("core", [])), FIRST_DAY)
+    gkg = _pending(ctx, set(st.get("gkg", [])), ctx.today - dt.timedelta(days=gkg_days))
+    # The last week can be legitimately unfinished (late files); only older days count as history work.
+    old = lambda days: [d for d in days if (ctx.today - d).days > 7]
+    return len(old(core)), len(old(gkg))
+
+
 if __name__ == "__main__":
     a = argparse.ArgumentParser()
     a.add_argument("--probe", action="store_true")
-    if a.parse_args().probe:
+    a.add_argument("--history-left", metavar="BANK", help="print days of history still to backfill")
+    args = a.parse_args()
+    if args.probe:
         sys.exit(probe())
+    if args.history_left:
+        core, gkg = history_left(args.history_left)
+        print(f"core={core} gkg={gkg}")
+        sys.exit(0)

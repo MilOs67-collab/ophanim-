@@ -1,7 +1,12 @@
 name: OPHANIM Data Bank · Backfill history
 
 # Run once (Actions tab → this workflow → Run workflow). Safe to re-run: it only adds or corrects rows.
+# The schedule keeps filling GDELT 2.0 history (back to Feb 2015) four times a day until it is complete,
+# then every scheduled run exits in seconds. Slots sit between nightly runs (06:17 UTC) so they never collide.
 on:
+  schedule:
+    - cron: "47 7,13,19 * * *"
+    - cron: "17 1 * * *"
   workflow_dispatch:
     inputs:
       only:
@@ -31,17 +36,27 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Anything left to fill? (scheduled runs only)
+        id: left
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then echo "go=1" >> "$GITHUB_OUTPUT"; exit 0; fi
+          out=$(python -m tools.databank.gdelt_v2 --history-left databank); echo "$out"
+          if [ "$out" = "core=0 gkg=0" ]; then echo "GDELT 2.0 history complete — nothing to do"; echo "go=0" >> "$GITHUB_OUTPUT"
+          else echo "go=1" >> "$GITHUB_OUTPUT"; fi
+
       - name: Pull the deepest history every source offers
+        if: steps.left.outputs.go == '1'
         env:
           SEC_USER_AGENT: ${{ vars.SEC_USER_AGENT }}
-          ONLY: ${{ inputs.only }}
-          GDELT_EVENTS_MINUTES: ${{ inputs.gdelt_minutes }}
-          GDELT_V2_MINUTES: ${{ inputs.gdelt_minutes }}
-          GDELT_GKG_MINUTES: ${{ inputs.gdelt_minutes }}
+          # Scheduled runs: GDELT 2.0 history only, 4 h each (ends well before the next slot or the nightly).
+          ONLY: ${{ github.event_name == 'schedule' && 'gdelt_v2,gdelt_gkg' || inputs.only }}
+          GDELT_EVENTS_MINUTES: ${{ inputs.gdelt_minutes || '240' }}
+          GDELT_V2_MINUTES: ${{ github.event_name == 'schedule' && '240' || inputs.gdelt_minutes }}
+          GDELT_GKG_MINUTES: ${{ github.event_name == 'schedule' && '30' || inputs.gdelt_minutes }}
         run: python -m tools.databank.run --mode backfill --bank databank --only "$ONLY"
 
       - name: Commit to the bank
-        if: always()
+        if: always() && steps.left.outputs.go == '1'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

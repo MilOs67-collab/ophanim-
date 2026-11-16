@@ -780,6 +780,16 @@ class TestGdeltV2(Base):
         self.assertEqual(state["gkg"], [self.D2.isoformat()])
 
 
+class TestGdeltV2History(Base):
+    def test_history_left_drives_the_scheduled_backfill(self):
+        from tools.databank import gdelt_v2 as V
+        total = (TODAY - V.FIRST_DAY).days
+        self.assertEqual(V.history_left(self.bank, TODAY), (total - 7, 23))  # last week never counts as history
+        self.env.update({"GDELT_V2_MINUTES": "60", "GDELT_GKG_MINUTES": "60"})
+        self.go("backfill", only={"gdelt_v2", "gdelt_gkg"})
+        self.assertEqual(V.history_left(self.bank, TODAY), (0, 0))  # → scheduled runs exit in seconds
+
+
 class TestDownloadMeter(Base):
     """Every source reports exactly how much it read; the night's total lands in health/."""
 

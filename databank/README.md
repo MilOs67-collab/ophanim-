@@ -39,6 +39,11 @@ The heavy raw geospatial data goes to Releases, so the repo stays small enough t
 | **News spread: every article mentioning an event — volume, sources, tone, confidence, how much is translated, how much is old stories still running (echo), and per-country amplification (mentions per event)** | `news/gdelt2/mentions/world_daily.csv`, `news/gdelt2/mentions/by_country/YYYY-MM.csv`, `news/gdelt2/mentions/top_sources/YYYY-MM.csv` (top 100 outlets/day) | GDELT 2.0 Mentions | **Feb 2015** via backfill; nightly from install |
 | **Knowledge Graph: every article GDELT read — tone, positive/negative/polarity; top 300 themes/day plus every `ECON_*` and `EPU_*` (economic-policy-uncertainty) theme; top 300 organizations/day plus a tracked list (central banks, regulators, exchanges, the 28 SEC companies, crypto majors); article counts and tone per country** | `news/gdelt2/gkg/world_daily.csv`, `news/gdelt2/gkg/by_country/`, `news/gdelt2/gkg/themes/`, `news/gdelt2/gkg/orgs/` (monthly files) | GDELT 2.0 Knowledge Graph (~300 MB+ a day) | last 30 days via backfill (`GDELT_GKG_HISTORY_DAYS`); nightly from install |
 
+**GDELT 2.0 history fills itself:** once this code is on `main`, the backfill workflow also runs on a schedule
+(7:17 PM, 1:47 AM, 7:47 AM and 1:47 PM Houston time), 4 hours each, working back toward Feb 2015 until nothing is
+left. Expect roughly 2–3 days. After that every scheduled run checks, finds nothing to do, and exits in seconds.
+Slots sit between nightly runs so the two never collide.
+
 GDELT 2.0 is counted one complete UTC day at a time (96 fifteen-minute files per stream, English and translated; `slots` and `slots_translated` record how many of each existed). A day with a missing
 file is re-counted the next night in case GDELT publishes it late; after two days the gap is final and the
 `slots` column records how many of the 96 files existed. Raw GDELT files are never stored — only these daily
