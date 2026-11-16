@@ -437,6 +437,12 @@ SLOW_LAST_ORDER[:] = ["gdelt_events", "gdelt_v2", "gdelt_gkg", "gdelt"]
 
 
 # ---------------------------------------------------------------- live probe
+def _prev_slot_url(url):
+    name = url.rsplit("/", 1)[1]
+    t = dt.datetime.strptime(name[:14], "%Y%m%d%H%M%S") - dt.timedelta(minutes=15)
+    return BASE + t.strftime("%Y%m%d%H%M%S") + name[14:]
+
+
 def probe():
     """Fetch GDELT's newest real files and prove every parser reads them. Exit 1 on any doubt."""
     txt = C.fetch_text(BASE + "lastupdate.txt", timeout=60)
@@ -452,10 +458,16 @@ def probe():
         print("lastupdate.txt:", txt)
         return 1
     day = dt.date.today()
-    raw = {k: C.fetch(u, timeout=180) for k, (u, _) in urls.items()}
+    try:
+        raw = {k: C.fetch(u, timeout=180) for k, (u, _) in urls.items()}
+    except C.FetchError as e:  # lastupdate.txt can name a file a few seconds before it is served
+        print(f"newest slot not served yet ({e}); using the slot before it")
+        prev = lambda u: _prev_slot_url(u)
+        urls = {k: (prev(u), None) for k, (u, _) in urls.items()}
+        raw = {k: C.fetch(u, timeout=180) for k, (u, _) in urls.items()}
     for k, (u, size) in urls.items():
         print(f"{k:9s} {len(raw[k]) / 1e6:7.2f} MB  {u}")
-        if len(raw[k]) != size:
+        if size is not None and len(raw[k]) != size:
             problems.append(f"{k}: got {len(raw[k])} bytes, lastupdate says {size}")
 
     ev = EventsDay(day)
