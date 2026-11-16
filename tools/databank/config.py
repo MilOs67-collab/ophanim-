@@ -95,3 +95,18 @@ CHOKEPOINTS = {
 
 HN_QUERIES = ["finance", "stock market", "tokenization", "federal reserve"]
 BLUESKY_QUERIES = ["stock market", "tokenization"]
+
+# GDELT Knowledge Graph: organizations kept every day even when they miss the daily top 300,
+# so their attention/tone series never has holes. GKG names are lowercase.
+GKG_TRACK_ORGS = [
+    "federal reserve", "european central bank", "bank of japan", "bank of england", "people's bank of china",
+    "international monetary fund", "world bank", "bank for international settlements",
+    "securities and exchange commission", "commodity futures trading commission", "us treasury",
+    "depository trust", "new york stock exchange", "nasdaq", "cme group", "intercontinental exchange",
+    "jpmorgan chase", "goldman sachs", "morgan stanley", "bank of america", "citigroup", "wells fargo",
+    "bank of new york mellon", "state street", "charles schwab", "interactive brokers",
+    "blackrock", "blackstone", "kkr", "berkshire hathaway", "american international group", "american express",
+    "visa", "mastercard", "paypal", "s&p global", "moody's", "factset",
+    "coinbase", "binance", "tether", "circle", "microstrategy",
+    "opec", "saudi aramco", "nvidia", "apple", "microsoft", "amazon", "alphabet", "tesla",
+]

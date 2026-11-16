@@ -36,6 +36,8 @@ jobs:
           SEC_USER_AGENT: ${{ vars.SEC_USER_AGENT }}
           ONLY: ${{ inputs.only }}
           GDELT_EVENTS_MINUTES: ${{ inputs.gdelt_minutes }}
+          GDELT_V2_MINUTES: ${{ inputs.gdelt_minutes }}
+          GDELT_GKG_MINUTES: ${{ inputs.gdelt_minutes }}
         run: python -m tools.databank.run --mode backfill --bank databank --only "$ONLY"
 
       - name: Commit to the bank

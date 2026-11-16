@@ -12,6 +12,7 @@ import time
 from . import common as C
 from . import sources as S
 from . import gdelt_events  # noqa: F401  (registers the GDELT raw-file source)
+from . import gdelt_v2  # noqa: F401  (registers GDELT 2.0 events+mentions and the knowledge graph)
 
 
 def run(mode, bank, raw=None, only=None, today=None, env=None):
