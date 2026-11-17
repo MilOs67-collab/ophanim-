@@ -42,6 +42,31 @@ def gd_zip(lines, member="x.CSV"):
     return b.getvalue()
 
 
+def e2_line(eid, cc="US", root="04", quad="1", gold=3.0, ment=10, art=4, tone=-2.0):
+    """GDELT 2.0 export row: 61 columns, action country at 53."""
+    f = [""] * 61
+    f[0], f[1], f[28], f[29], f[30] = eid, "20261030", root, quad, str(gold)
+    f[31], f[32], f[33], f[34], f[53] = str(ment), "2", str(art), str(tone), cc
+    f[59], f[60] = "20261030000000", "https://news.example/e"
+    return "\t".join(f)
+
+
+def m2_line(eid, evtime, mtime, src="a.example", tone=-1.0, conf=60, mtype="1", trans=""):
+    """GDELT 2.0 mentions row: 16 columns."""
+    f = [""] * 16
+    f[0], f[1], f[2], f[3], f[4], f[5] = eid, evtime, mtime, mtype, src, "https://" + src + "/m"
+    f[11], f[13], f[14] = str(conf), str(tone), trans
+    return "\t".join(f)
+
+
+def k2_line(themes, orgs, locs, tone="-2.5,1.0,3.5,4.5,20,1,300", src="a.example", trans=""):
+    """GKG 2.1 row: 27 columns."""
+    f = [""] * 27
+    f[0], f[1], f[3], f[4] = "20261030000000-1", "20261030000000", src, "https://" + src + "/k"
+    f[7], f[9], f[13], f[15], f[25] = themes, locs, orgs, tone, trans
+    return "\t".join(f)
+
+
 class Fake:
     """Routes URLs to payloads shaped exactly like each real API."""
 
@@ -57,6 +82,8 @@ class Fake:
                 raise C.FetchError(f"{url} -> HTTP 503")
         J = lambda o: json.dumps(o).encode()
         td = self.today
+        if "data.gdeltproject.org/gdeltv2/" in url:
+            return self.gdelt2(url)
         if "fredgraph.csv" in url:
             sid = url.split("id=")[1].split("&")[0]
             return (f"observation_date,{sid}\n1990-01-01,1.5\n1990-01-02,.\n"
@@ -193,6 +220,35 @@ class Fake:
             return J({"ac": [{"hex": "ae0001"}, {"hex": "ae0002"}], "total": 2})
         raise C.FetchError(f"unrouted fixture URL: {url}")
 
+    def gdelt2(self, url):
+        """Yesterday is missing its 12:00 slot, the day before its 23:45 slot, older days never published."""
+        name = url.rsplit("/", 1)[1]
+        ds, slot, kind = name[:8], name[8:14], name[15:]
+        age = (self.today - dt.date(int(ds[:4]), int(ds[4:6]), int(ds[6:8]))).days
+        if age not in (1, 2) or (age, slot) in ((1, "120000"), (2, "234500")):
+            raise C.FetchError(f"{url} -> HTTP 404")
+        t = ds + slot
+        if kind.startswith("translation."):  # GDELT Translingual: one French-language story per slot
+            kind = kind[len("translation."):]
+            tr = "srclc:fra;eng:GT-FRA 1.0"
+            if kind == "export.CSV.zip":
+                return gd_zip([e2_line(t + "3", "FR", "05", "2", 2.0, 4, 2, 1.5)])
+            if kind == "mentions.CSV.zip":
+                return gd_zip([m2_line(t + "3", t, t, "lemonde.fr", 1.5, 50, "1", tr)])
+            return gd_zip([k2_line("ECON_INFLATION", "banque de france", "4#Paris#FR#FR11#48.8#2.3#1",
+                                   tone="1.5,3,1.5,4.5,0,0,10", src="lemonde.fr", trans=tr)
+                           + "<PAGE_TITLE>Tokenization of bonds gathers pace</PAGE_TITLE>"])
+        if kind == "export.CSV.zip":
+            return gd_zip([e2_line(t + "1", "US", "04", "1", 3.0, 10, 4, -2.0),
+                           e2_line(t + "2", "UP", "19", "4", -9.0, 30, 2, -8.0), "garbage"])
+        if kind == "mentions.CSV.zip":
+            return gd_zip([m2_line(t + "1", t, t, "a.example", -1.0, 60),
+                           m2_line("999", "20200101000000", t, "b.example", -3.0, 20, "2", "srclc:fra")])
+        if kind == "gkg.csv.zip":
+            return gd_zip([k2_line("ECON_STOCKMARKET;TAX_FNCACT;ECON_STOCKMARKET", "goldman sachs;Acme Widgets",
+                                   "1#United States#US#US##38#-97#US;4#Paris, France#FR#FR11#48.8#2.3#-1456928")])
+        raise C.FetchError(f"{url} -> HTTP 404")
+
 
 class Base(unittest.TestCase):
     def setUp(self):
@@ -201,7 +257,7 @@ class Base(unittest.TestCase):
         self.raw = os.path.join(self.dir, "raw")
         self._fetch, self._sleep = C.fetch_impl, C.sleep_impl
         C.sleep_impl = lambda s: None
-        self.env = {"SEC_USER_AGENT": "Test Co test@example.com"}
+        self.env = {"SEC_USER_AGENT": "Test Co test@example.com", "GDELT_DOC_API": "1"}
 
     def tearDown(self):
         C.fetch_impl, C.sleep_impl = self._fetch, self._sleep
@@ -541,7 +597,7 @@ class TestGdeltEvents(Base):
     def test_runs_before_gdelt_api_and_after_everything_else(self):
         rep = self.go("nightly")
         names = [r["source"] for r in rep["sources"]]
-        self.assertEqual(names[-2:], ["gdelt_events", "gdelt"])
+        self.assertEqual(names[-4:], ["gdelt_events", "gdelt_v2", "gdelt_gkg", "gdelt"])
 
 
 class TestShips(Base):
@@ -604,6 +660,213 @@ class TestShipsLive(Base):
         self.assertEqual((cp["hormuz"]["vessels"], cp["hormuz"]["stationary"]), ("2", "1"))
         self.assertEqual(cp["suez"]["vessels"], "1")
         self.assertTrue(os.path.exists(os.path.join(self.raw, "ais_positions.csv.gz")))
+
+
+class TestGdeltV2(Base):
+    D1 = (TODAY - dt.timedelta(days=1))
+    D2 = (TODAY - dt.timedelta(days=2))
+
+    def test_events_use_v2_column_layout(self):
+        from tools.databank import gdelt_v2 as V
+        ev = V.EventsDay(self.D1)
+        ev.add([e2_line("1", "US", "04", "1", 3.0, 10, 4, -2.0), e2_line("2", "US", "19", "4", -9.0, 30, 2, -8.0),
+                e2_line("3", "", "14", "3", -5.0, 2, 1, -4.0), "garbage"])
+        self.assertEqual(ev.bad, 1)
+        rows = {r["country"]: r for r in ev.rows()}
+        self.assertEqual((rows["WORLD"]["events"], rows["US"]["events"]), (3, 2))
+        self.assertEqual(rows["US"]["tone"], round((-2 * 4 + -8 * 2) / 6, 3))
+        self.assertEqual(rows["US"]["goldstein"], round((3 * 10 + -9 * 30) / 40, 3))
+        self.assertEqual((rows["WORLD"]["protests"], rows["WORLD"]["violence"]), (1, 1))
+        self.assertEqual(rows["US"]["date"], self.D1.isoformat())  # the file's news day
+        self.assertEqual(ev.cc_of, {"1": "US", "2": "US"})
+
+    def test_mentions_math(self):
+        from tools.databank import gdelt_v2 as V
+        d = self.D1.strftime("%Y%m%d")
+        mn = V.MentionsDay(self.D1, {"1": "US"})
+        mn.add([m2_line("1", d + "000000", d + "000000", "a.example", -1.0, 60),
+                m2_line("1", d + "000000", d + "011500", "b.example", -3.0, 40),
+                m2_line("9", "20200101000000", d + "011500", "b.example", 2.0, 20, "2", "srclc:fra"),
+                "garbage"])
+        self.assertEqual(mn.bad, 1)
+        (w,), cc, srcs = mn.rows(96)
+        self.assertEqual((w["mentions"], w["events_mentioned"], w["sources"]), (3, 2, 2))
+        self.assertEqual(w["tone"], round(-2 / 3, 3))
+        self.assertEqual(w["confidence"], 40.0)
+        self.assertEqual((w["echo_share"], w["translated_share"]), (round(1 / 3, 4), round(1 / 3, 4)))
+        self.assertEqual((w["web_share"], w["matched_share"]), (round(2 / 3, 4), round(2 / 3, 4)))
+        self.assertEqual(cc, [{"date": self.D1.isoformat(), "country": "US", "mentions": 2,
+                               "events_mentioned": 1, "amplification": 2.0, "tone": -2.0}])
+        self.assertEqual([x["source"] for x in srcs], ["b.example", "a.example"])
+
+    def test_gkg_math_and_tracked_orgs(self):
+        from tools.databank import gdelt_v2 as V
+        g = V.GkgDay(self.D1, ["federal reserve"])
+        g.add([k2_line("ECON_STOCKMARKET;WAR", "Federal Reserve;acme", "1#United States#US#US##38#-97#US"),
+               k2_line("WAR;WAR", "acme", "4#Paris#FR#FR11#48.8#2.3#1;4#Lyon#FR#FR00#45#4#2", tone="1.5,3,1.5,4.5,0,0,10"),
+               "garbage"])
+        self.assertEqual(g.bad, 1)
+        old = V.THEMES_TOP, V.ORGS_TOP
+        V.THEMES_TOP = V.ORGS_TOP = 1
+        try:
+            (w,), cc, themes, orgs = g.rows(96)
+        finally:
+            V.THEMES_TOP, V.ORGS_TOP = old
+        self.assertEqual((w["articles"], w["tone"]), (2, -0.5))
+        self.assertEqual({x["theme"]: x["articles"] for x in themes}, {"WAR": 2, "ECON_STOCKMARKET": 1})  # ECON_ always kept
+        self.assertEqual({x["org"]: x["articles"] for x in orgs}, {"acme": 2, "federal reserve": 1})       # tracked always kept
+        self.assertEqual({x["country"]: x["articles"] for x in cc}, {"US": 1, "FR": 1})                    # one per article
+
+    def test_nightly_counts_whole_days_and_retries_gaps(self):
+        rep = self.go("nightly", only={"gdelt_v2", "gdelt_gkg"})
+        st = {r["source"]: r for r in rep["sources"]}
+        self.assertTrue(st["gdelt_v2"]["ok"] and st["gdelt_gkg"]["ok"], (st["gdelt_v2"]["error"], st["gdelt_gkg"]["error"]))
+        self.assertIn("1 days complete, 2 partial", st["gdelt_v2"]["notes"][0])
+        ew = {r["date"]: r for r in self.rows("news", "gdelt2", "events", "world_daily.csv")}
+        d1, d2 = self.D1.isoformat(), self.D2.isoformat()
+        self.assertEqual(set(ew), {d1, d2})
+        self.assertEqual((ew[d1]["events"], ew[d1]["slots"], ew[d1]["slots_translated"]), ("285", "95", "95"))
+        cc = {r["country"] for r in self.rows("news", "gdelt2", "events", "by_country", f"{d1[:7]}.csv")
+              if r["date"] == d1}
+        self.assertEqual(cc, {"US", "UP", "FR"})
+        mw = {r["date"]: r for r in self.rows("news", "gdelt2", "mentions", "world_daily.csv")}
+        self.assertEqual((mw[d1]["mentions"], mw[d1]["events_mentioned"], mw[d1]["matched_share"],
+                          mw[d1]["echo_share"], mw[d1]["translated_share"]),
+                         ("285", "191", "0.6667", "0.3333", "0.6667"))
+        mcc = [r for r in self.rows("news", "gdelt2", "mentions", "by_country", f"{d1[:7]}.csv") if r["date"] == d1]
+        self.assertEqual(sorted((r["country"], r["mentions"], r["amplification"]) for r in mcc),
+                         [("FR", "95", "1"), ("US", "95", "1")])
+        gw = {r["date"]: r for r in self.rows("news", "gdelt2", "gkg", "world_daily.csv")}
+        self.assertEqual((gw[d1]["articles"], gw[d1]["tone"], gw[d1]["translated_share"]), ("190", "-0.5", "0.5"))
+        th = {r["theme"]: r["articles"] for r in self.rows("news", "gdelt2", "gkg", "themes", f"{d1[:7]}.csv")
+              if r["date"] == d1}
+        self.assertEqual(th, {"ECON_STOCKMARKET": "95", "TAX_FNCACT": "95", "ECON_INFLATION": "95"})
+        tp = {r["theme"]: (r["articles"], r["tone"], r["volume_pct"])
+              for r in self.rows("news", "gdelt2", "gkg", "topics_daily.csv") if r["date"] == d1}
+        self.assertEqual(tp["markets"], ("95", "-2.5", "50"))       # by GKG theme code
+        self.assertEqual(tp["economy"], ("95", "1.5", "50"))
+        self.assertEqual(tp["tokenization"], ("95", "1.5", "50"))   # by page title (GKG has no code for it)
+        self.assertEqual(tp["shipping"], ("0", "", "0"))            # quiet topics still get a row
+        self.assertEqual(len(tp), 8)
+        orgs = {r["org"] for r in self.rows("news", "gdelt2", "gkg", "orgs", f"{d1[:7]}.csv")}
+        self.assertEqual(orgs, {"goldman sachs", "acme widgets", "banque de france"})
+        with open(os.path.join(self.bank, "state", "gdelt_v2.json")) as f:
+            state = json.load(f)
+        # Complete day (gap is final after 2 days) is banked; yesterday's gap and the empty day are retried.
+        self.assertEqual(state, {"core": [d2], "gkg": [d2]})
+        rep2 = self.go("nightly", only={"gdelt_v2"})
+        self.assertIn("0 days complete, 2 partial", rep2["sources"][0]["notes"][0])
+        self.assertEqual(len(self.rows("news", "gdelt2", "events", "world_daily.csv")), 2)  # re-count is idempotent
+
+    def test_server_down_fails_cleanly(self):
+        def down(url, **kw):
+            raise C.FetchError(f"{url} -> <urlopen error timed out>")
+        C.fetch_impl = down
+        rep = R.run("nightly", self.bank, None, only={"gdelt_v2", "gdelt_gkg"}, today=TODAY, env=self.env)
+        for r in rep["sources"]:
+            self.assertFalse(r["ok"])
+            self.assertIn("unreachable", r["error"])
+
+    def test_budget_zero_does_nothing(self):
+        self.env.update({"GDELT_V2_MINUTES": "0", "GDELT_GKG_MINUTES": "0"})
+        rep = self.go("nightly", only={"gdelt_v2", "gdelt_gkg"})
+        for r in rep["sources"]:
+            self.assertTrue(r["ok"])
+            self.assertIn("0 days complete, 0 partial", r["notes"][0])
+
+    def test_backfill_core_to_2015_gkg_only_recent(self):
+        from tools.databank import gdelt_v2 as V
+        self.env.update({"GDELT_V2_MINUTES": "60", "GDELT_GKG_MINUTES": "60", "GDELT_GKG_HISTORY_DAYS": "2"})
+        rep = self.go("backfill", only={"gdelt_v2", "gdelt_gkg"})
+        st = {r["source"]: r for r in rep["sources"]}
+        self.assertTrue(all(r["ok"] for r in st.values()))
+        with open(os.path.join(self.bank, "state", "gdelt_v2.json")) as f:
+            state = json.load(f)
+        total = (TODAY - V.FIRST_DAY).days
+        # Everything back to Feb 2015 is settled except yesterday's gap and the last week's empty days.
+        self.assertEqual(len(state["core"]), total - 1 - 5)
+        self.assertEqual(state["gkg"], [self.D2.isoformat()])
+
+
+class TestGdeltApiRetired(Base):
+    def test_search_api_source_skips_unless_opted_in(self):
+        self.env.pop("GDELT_DOC_API")
+        fake = Fake()
+        rep = self.go("nightly", fake=fake, only={"gdelt"})
+        (r,) = rep["sources"]
+        self.assertTrue(r["ok"] and r["skipped"])
+        self.assertIn("replaced by gdelt_gkg topics", r["notes"][0])
+        self.assertFalse([u for u in fake.calls if "api.gdeltproject.org" in u])  # not one request sent
+
+
+class TestGdeltV2History(Base):
+    def test_history_left_drives_the_scheduled_backfill(self):
+        from tools.databank import gdelt_v2 as V
+        total = (TODAY - V.FIRST_DAY).days
+        self.assertEqual(V.history_left(self.bank, TODAY), (total - 7, 23))  # last week never counts as history
+        self.env.update({"GDELT_V2_MINUTES": "60", "GDELT_GKG_MINUTES": "60"})
+        self.go("backfill", only={"gdelt_v2", "gdelt_gkg"})
+        self.assertEqual(V.history_left(self.bank, TODAY), (0, 0))  # → scheduled runs exit in seconds
+
+
+class TestDownloadMeter(Base):
+    """Every source reports exactly how much it read; the night's total lands in health/."""
+
+    def test_each_source_reports_its_own_bytes(self):
+        seen, fake = [], Fake(TODAY)
+
+        def meter(url, **kw):
+            body = fake(url, **kw)
+            seen.append(len(body or b""))
+            return body
+
+        rep = self.go("nightly", fake=meter)
+        by = {r["source"]: r for r in rep["sources"]}
+        self.assertEqual(rep["bytes_read"], sum(seen))
+        self.assertEqual(rep["requests"], len(seen))
+        self.assertGreater(by["fred"]["bytes_read"], 0)
+        self.assertGreater(by["fred"]["requests"], 0)
+        # A skipped source reads nothing and is not charged for its neighbours' traffic.
+        self.assertEqual(by["worldbank"]["bytes_read"], 0)
+        self.assertEqual(by["worldbank"]["requests"], 0)
+
+    def test_failed_source_reads_zero(self):
+        rep = self.go("nightly", fake=Fake(broken=("mempool.space",)))
+        by = {r["source"]: r for r in rep["sources"]}
+        self.assertFalse(by["bitcoin_chain"]["ok"])
+        self.assertEqual(by["bitcoin_chain"]["bytes_read"], 0)
+
+    def test_runs_csv_and_daily_volume_written(self):
+        rep = self.go("nightly")
+        with open(os.path.join(self.bank, "health", "runs.csv")) as f:
+            runs = list(csv.DictReader(f))
+        self.assertIn("bytes_read", runs[0])
+        self.assertEqual(sum(int(r["bytes_read"]) for r in runs), rep["bytes_read"])
+        with open(os.path.join(self.bank, "health", "daily_volume.csv")) as f:
+            vol = list(csv.DictReader(f))
+        self.assertEqual(len(vol), 1)
+        self.assertEqual(vol[0]["date"], TODAY.isoformat())
+        self.assertAlmostEqual(float(vol[0]["mb_read"]), round(rep["bytes_read"] / 1e6, 2))
+        self.assertEqual(int(vol[0]["requests"]), rep["requests"])
+
+    def test_old_runs_rows_survive_new_columns(self):
+        hdir = os.path.join(self.bank, "health")
+        os.makedirs(hdir)
+        with open(os.path.join(hdir, "runs.csv"), "w") as f:
+            f.write("date,run,source,ok,added,updated,seconds,error\n"
+                    "2026-10-01,nightly,fred,1,4,16,21.4,\n")
+        self.go("nightly")
+        with open(os.path.join(hdir, "runs.csv")) as f:
+            runs = list(csv.DictReader(f))
+        old = [r for r in runs if r["date"] == "2026-10-01"]
+        self.assertEqual(len(old), 1)
+        self.assertEqual((old[0]["added"], old[0]["seconds"], old[0]["bytes_read"]), ("4", "21.4", ""))
+
+    def test_websocket_messages_counted(self):
+        C.net_reset()
+        C.count_stream(512)
+        C.count_stream(488)
+        self.assertEqual(C.NET, {"data": 1000, "wire": 1000, "calls": 2})
 
 
 class TestWorkflows(unittest.TestCase):

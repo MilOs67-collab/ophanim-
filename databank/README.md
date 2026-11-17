@@ -9,7 +9,7 @@ OPHANIM's permanent memory. Every night it snapshots every feed and compounds it
 | `tables/**.csv` | Living time-series tables. The backfill seeds them, and every night extends them. | ~35 MB one-time, then ~12 MB/yr |
 | `news/YYYY/MM/DD.jsonl.gz` | Every headline and post collected that day (GDELT, Hacker News, Bluesky), deduped | ~30 MB/yr |
 | `manifest.json` | Index of every table: rows, columns, first and last date | rewritten nightly |
-| `health/` | Per-source status for every run (`latest-nightly.json`, `runs.csv`) | tiny |
+| `health/` | Per-source status for every run (`latest-nightly.json`, `runs.csv`), plus how much each source downloaded (`bytes_read`, `bytes_wire`, `requests`) and one line per night in `daily_volume.csv` (MB read, MB over the wire, requests, rows kept) | tiny |
 | GitHub **Releases** `databank-raw-YYYY-MM` | Full untouched nightly payloads: every aircraft, ship, satellite element set and raw API response | ~2 MB/night, stored outside the repo |
 
 The heavy raw geospatial data goes to Releases, so the repo stays small enough to last decades.
@@ -34,7 +34,21 @@ The heavy raw geospatial data goes to Releases, so the repo stays small enough t
 | Bitcoin hashrate and difficulty | `crypto/btc_hashrate.csv` | mempool.space | 2009 |
 | 12 crypto pairs, daily OHLCV | `crypto/coinbase/*.csv` | Coinbase | 2015 (from listing) |
 | **Global events: tone, conflict vs. cooperation, protests, violence — worldwide and per country, daily** | `news/gdelt_events/world_daily.csv`, `news/gdelt_events/by_country/YYYY-MM.csv` | GDELT raw event files | **1979** (fills backward from today, about 5 hours of backfill runs) |
-| News tone and volume, 8 themes | `news/gdelt_daily.csv` | GDELT search service (often blocks GitHub) | best effort |
+| News tone and volume, 8 topics (markets, banking, crypto, regulation, energy, economy, tokenization, shipping) | `news/gdelt2/gkg/topics_daily.csv` (articles, tone, share of all coverage) | GDELT Knowledge Graph files — topic definitions in `GKG_TOPICS`, `tools/databank/config.py` | with the Knowledge Graph |
+| Same 8 topics, old method (frozen) | `news/gdelt_daily.csv` | GDELT search API. It answers GitHub with HTTP 429, so this source is retired; `GDELT_DOC_API=1` re-enables it | ended Nov 2026 |
+| **GDELT 2.0 events (English sources + GDELT Translingual from 65 languages, 15-minute files): same measures as above** | `news/gdelt2/events/world_daily.csv`, `news/gdelt2/events/by_country/YYYY-MM.csv` | GDELT 2.0 Events | **Feb 2015** via backfill; nightly from install |
+| **News spread: every article mentioning an event — volume, sources, tone, confidence, how much is translated, how much is old stories still running (echo), and per-country amplification (mentions per event)** | `news/gdelt2/mentions/world_daily.csv`, `news/gdelt2/mentions/by_country/YYYY-MM.csv`, `news/gdelt2/mentions/top_sources/YYYY-MM.csv` (top 100 outlets/day) | GDELT 2.0 Mentions | **Feb 2015** via backfill; nightly from install |
+| **Knowledge Graph: every article GDELT read — tone, positive/negative/polarity; top 300 themes/day plus every `ECON_*` and `EPU_*` (economic-policy-uncertainty) theme; top 300 organizations/day plus a tracked list (central banks, regulators, exchanges, the 28 SEC companies, crypto majors); article counts and tone per country** | `news/gdelt2/gkg/world_daily.csv`, `news/gdelt2/gkg/by_country/`, `news/gdelt2/gkg/themes/`, `news/gdelt2/gkg/orgs/` (monthly files) | GDELT 2.0 Knowledge Graph (~300 MB+ a day) | last 30 days via backfill (`GDELT_GKG_HISTORY_DAYS`); nightly from install |
+
+**GDELT 2.0 history fills itself:** once this code is on `main`, the backfill workflow also runs on a schedule
+(7:17 PM, 1:47 AM, 7:47 AM and 1:47 PM Houston time), 4 hours each, working back toward Feb 2015 until nothing is
+left. Expect roughly 2–3 days. After that every scheduled run checks, finds nothing to do, and exits in seconds.
+Slots sit between nightly runs so the two never collide.
+
+GDELT 2.0 is counted one complete UTC day at a time (96 fifteen-minute files per stream, English and translated; `slots` and `slots_translated` record how many of each existed). A day with a missing
+file is re-counted the next night in case GDELT publishes it late; after two days the gap is final and the
+`slots` column records how many of the 96 files existed. Raw GDELT files are never stored — only these daily
+summaries (~30 MB/yr). Organizations to always keep live in `GKG_TRACK_ORGS` in `tools/databank/config.py`.
 
 **Starts on day one and compounds forward** (no free archive exists): CoinGecko top 100 coins, Bitcoin blocks and fees, aircraft counts by country, military aircraft, ship counts at 9 chokepoints, satellite catalog, headlines and social posts.
 
