@@ -33,6 +33,3 @@ jobs:
         with:
           python-version: "3.12"
       - run: python -m tools.databank.gdelt_v2 --probe
-      - name: Theme scan (temporary — maps OPHANIM topics to GKG theme codes)
-        if: always()
-        run: python -m tools.databank.gdelt_v2 --theme-scan "STOCK,MARKET,CENTRAL,BANK,CRYPTO,BITCOIN,BLOCKCHAIN,DIGITAL_CURRENC,REGULAT,OIL,ENERGY,INFLATION,PRICE,TOKEN,SHIP,MARITIME,PORT,FREIGHT,SUPPLY_CHAIN,TRADE"

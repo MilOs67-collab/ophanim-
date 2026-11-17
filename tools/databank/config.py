@@ -110,3 +110,19 @@ GKG_TRACK_ORGS = [
     "coinbase", "binance", "tether", "circle", "microstrategy",
     "opec", "saudi aramco", "nvidia", "apple", "microsoft", "amazon", "alphabet", "tesla",
 ]
+
+# OPHANIM's eight news topics, rebuilt from the Knowledge Graph (GDELT's search API refuses GitHub's
+# shared IPs with HTTP 429, so the old `gdelt` source could not run). Codes verified against live GKG files.
+# "themes": an article counts if it carries any of these GKG theme codes.
+# "title":  ...or if its page title contains any of these lowercase fragments (for topics GKG has no code for).
+GKG_TOPICS = {
+    "markets": {"themes": ["ECON_STOCKMARKET"]},
+    "banking": {"themes": ["ECON_CENTRALBANK", "WB_1235_CENTRAL_BANKS", "EPU_POLICY_CENTRAL_BANK"]},
+    "crypto": {"themes": ["ECON_BITCOIN"], "title": ["crypto", "bitcoin", "ethereum", "stablecoin"]},
+    "regulation": {"themes": ["EPU_CATS_FINANCIAL_REGULATION", "WB_853_FINANCIAL_LAWS_AND_REGULATIONS",
+                              "WB_969_CAPITAL_MARKETS_LAW_AND_REGULATION"]},
+    "energy": {"themes": ["ECON_OILPRICE"]},
+    "economy": {"themes": ["ECON_INFLATION", "WB_442_INFLATION"]},
+    "tokenization": {"themes": [], "title": ["tokeniz", "tokenis", "real-world asset", "real world asset"]},
+    "shipping": {"themes": ["MARITIME", "WB_167_PORTS"]},
+}

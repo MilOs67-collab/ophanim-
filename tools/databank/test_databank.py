@@ -236,7 +236,8 @@ class Fake:
             if kind == "mentions.CSV.zip":
                 return gd_zip([m2_line(t + "3", t, t, "lemonde.fr", 1.5, 50, "1", tr)])
             return gd_zip([k2_line("ECON_INFLATION", "banque de france", "4#Paris#FR#FR11#48.8#2.3#1",
-                                   tone="1.5,3,1.5,4.5,0,0,10", src="lemonde.fr", trans=tr)])
+                                   tone="1.5,3,1.5,4.5,0,0,10", src="lemonde.fr", trans=tr)
+                           + "<PAGE_TITLE>Tokenization of bonds gathers pace</PAGE_TITLE>"])
         if kind == "export.CSV.zip":
             return gd_zip([e2_line(t + "1", "US", "04", "1", 3.0, 10, 4, -2.0),
                            e2_line(t + "2", "UP", "19", "4", -9.0, 30, 2, -8.0), "garbage"])
@@ -256,7 +257,7 @@ class Base(unittest.TestCase):
         self.raw = os.path.join(self.dir, "raw")
         self._fetch, self._sleep = C.fetch_impl, C.sleep_impl
         C.sleep_impl = lambda s: None
-        self.env = {"SEC_USER_AGENT": "Test Co test@example.com"}
+        self.env = {"SEC_USER_AGENT": "Test Co test@example.com", "GDELT_DOC_API": "1"}
 
     def tearDown(self):
         C.fetch_impl, C.sleep_impl = self._fetch, self._sleep
@@ -740,6 +741,13 @@ class TestGdeltV2(Base):
         th = {r["theme"]: r["articles"] for r in self.rows("news", "gdelt2", "gkg", "themes", f"{d1[:7]}.csv")
               if r["date"] == d1}
         self.assertEqual(th, {"ECON_STOCKMARKET": "95", "TAX_FNCACT": "95", "ECON_INFLATION": "95"})
+        tp = {r["theme"]: (r["articles"], r["tone"], r["volume_pct"])
+              for r in self.rows("news", "gdelt2", "gkg", "topics_daily.csv") if r["date"] == d1}
+        self.assertEqual(tp["markets"], ("95", "-2.5", "50"))       # by GKG theme code
+        self.assertEqual(tp["economy"], ("95", "1.5", "50"))
+        self.assertEqual(tp["tokenization"], ("95", "1.5", "50"))   # by page title (GKG has no code for it)
+        self.assertEqual(tp["shipping"], ("0", "", "0"))            # quiet topics still get a row
+        self.assertEqual(len(tp), 8)
         orgs = {r["org"] for r in self.rows("news", "gdelt2", "gkg", "orgs", f"{d1[:7]}.csv")}
         self.assertEqual(orgs, {"goldman sachs", "acme widgets", "banque de france"})
         with open(os.path.join(self.bank, "state", "gdelt_v2.json")) as f:
@@ -778,6 +786,17 @@ class TestGdeltV2(Base):
         # Everything back to Feb 2015 is settled except yesterday's gap and the last week's empty days.
         self.assertEqual(len(state["core"]), total - 1 - 5)
         self.assertEqual(state["gkg"], [self.D2.isoformat()])
+
+
+class TestGdeltApiRetired(Base):
+    def test_search_api_source_skips_unless_opted_in(self):
+        self.env.pop("GDELT_DOC_API")
+        fake = Fake()
+        rep = self.go("nightly", fake=fake, only={"gdelt"})
+        (r,) = rep["sources"]
+        self.assertTrue(r["ok"] and r["skipped"])
+        self.assertIn("replaced by gdelt_gkg topics", r["notes"][0])
+        self.assertFalse([u for u in fake.calls if "api.gdeltproject.org" in u])  # not one request sent
 
 
 class TestGdeltV2History(Base):

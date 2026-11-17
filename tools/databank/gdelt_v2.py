@@ -41,7 +41,7 @@ E_ID, E_ROOT, E_QUAD, E_GOLD, E_MENT, E_ART, E_TONE, E_CC, E_NCOLS = 0, 28, 29, 
 # Mentions
 M_EVT, M_EVTTIME, M_TIME, M_TYPE, M_SRC, M_CONF, M_TONE, M_TRANS, M_NCOLS = 0, 1, 2, 3, 4, 11, 13, 14, 16
 # GKG 2.1
-G_SRC, G_THEMES, G_LOCS, G_ORGS, G_TONE, G_TRANS, G_NCOLS = 3, 7, 9, 13, 15, 25, 27
+G_SRC, G_THEMES, G_LOCS, G_ORGS, G_TONE, G_TRANS, G_EXTRAS, G_NCOLS = 3, 7, 9, 13, 15, 25, 26, 27
 
 THEMES_TOP, ORGS_TOP, SOURCES_TOP = 300, 300, 100
 THEME_KEEP_PREFIXES = ("ECON_", "EPU_")  # economy + economic-policy-uncertainty themes: every day, always
@@ -183,9 +183,16 @@ class MentionsDay:
 class GkgDay:
     """Every article GDELT read that day: tone, themes, organizations and the countries it covers."""
 
-    def __init__(self, day, track_orgs=()):
+    def __init__(self, day, track_orgs=(), topics=None):
         self.d = day.strftime("%Y%m%d")
         self.track = {o.lower() for o in track_orgs}
+        self.topic_defs = topics or {}
+        self.by_theme = {}  # GKG theme code -> [topic, ...]
+        for name, spec in self.topic_defs.items():
+            for th in spec.get("themes", ()):
+                self.by_theme.setdefault(th, []).append(name)
+        self.by_title = [(name, tuple(spec["title"])) for name, spec in self.topic_defs.items() if spec.get("title")]
+        self.topics = {}
         self.n = self.trans = 0
         self.tone = self.pos = self.neg = self.pol = 0.0
         self.srcs = set()
@@ -221,8 +228,21 @@ class GkgDay:
             self.trans += bool(f[G_TRANS].strip()) if len(f) > G_TRANS else 0
             if f[G_SRC]:
                 self.srcs.add(f[G_SRC])
+            hit = set()
             for th in {x for x in f[G_THEMES].split(";") if x}:
                 self._bump(self.themes, th, tone)
+                if th in self.by_theme:
+                    hit.update(self.by_theme[th])
+            if self.by_title and len(f) > G_EXTRAS:
+                x = f[G_EXTRAS]
+                i = x.find("<PAGE_TITLE>")
+                if i >= 0:
+                    title = x[i + 12:x.find("</PAGE_TITLE>", i)].lower()
+                    for name, frags in self.by_title:
+                        if name not in hit and any(fr in title for fr in frags):
+                            hit.add(name)
+            for name in hit:
+                self._bump(self.topics, name, tone)
             for org in {x.strip().lower() for x in f[G_ORGS].split(";") if x.strip()}:
                 self._bump(self.orgs, org, tone)
             ccs = set()
@@ -232,6 +252,16 @@ class GkgDay:
                     ccs.add(p[2])
             for cc in ccs:
                 self._bump(self.cc, cc, tone)
+
+    def topic_rows(self):
+        """One row per OPHANIM topic per day (zero-article topics included, so the series has no holes)."""
+        date = f"{self.d[:4]}-{self.d[4:6]}-{self.d[6:]}"
+        out = []
+        for name in self.topic_defs:
+            c, tone = self.topics.get(name, (0, 0.0))
+            out.append({"date": date, "theme": name, "articles": c, "tone": round(tone / c, 3) if c else None,
+                        "volume_pct": round(100 * c / self.n, 4) if self.n else None})
+        return out
 
     def _top(self, table, n, keep):
         top = sorted(table.items(), key=lambda kv: (-kv[1][0], kv[0]))[:n]
@@ -430,7 +460,7 @@ def gdelt_gkg(ctx, t):
     GDELT_GKG_HISTORY_DAYS (default 30) — a full 2015+ history would be terabytes to download."""
 
     def do_day(day):
-        g = GkgDay(day, K.GKG_TRACK_ORGS)
+        g = GkgDay(day, K.GKG_TRACK_ORGS, K.GKG_TOPICS)
         ok, tr, miss, errs = _both(ctx, day, "gkg.csv", g.add, t)
         if errs:
             return 0, 0, 0, errs
@@ -441,6 +471,8 @@ def gdelt_gkg(ctx, t):
             _put_monthly(ctx, t, ["gkg", "by_country"], cc, ("date", "country"), ["date", "country"] + GKG_COUNT_COLS)
             _put_monthly(ctx, t, ["gkg", "themes"], themes, ("date", "theme"), ["date", "theme"] + GKG_COUNT_COLS)
             _put_monthly(ctx, t, ["gkg", "orgs"], orgs, ("date", "org"), ["date", "org"] + GKG_COUNT_COLS)
+            _put(ctx, t, ["gkg", "topics_daily.csv"], g.topic_rows(), ("date", "theme"),
+                 ["date", "theme", "articles", "tone", "volume_pct"])
         if g.bad:
             t.notes.append(f"{day} gkg: skipped {g.bad} malformed lines")
         return g.n, ok + tr, miss, []
@@ -529,9 +561,10 @@ def _probe_one(listing, label):
     if (w[0]["matched_share"] or 0) < 0.2:  # informational: many mentions are of older events
         print("NOTE: few of this slot's mentions point at this slot's own events (normal for one slot)")
 
-    g = GkgDay(day, K.GKG_TRACK_ORGS)
+    g = GkgDay(day, K.GKG_TRACK_ORGS, K.GKG_TOPICS)
     g.add(_lines(raw["gkg"]))
     gw, gcc, themes, orgs = g.rows(1)
+    print("          topics:    ", ", ".join(f"{r['theme']}={r['articles']}" for r in g.topic_rows()))
     print(f"gkg       {g.n} articles · {len(g.themes)} themes · {len(g.orgs)} orgs · {len(g.cc)} countries"
           f" · tone {gw[0]['tone']} · bad {g.bad}")
     print("          top themes:", ", ".join(x["theme"] for x in themes[:6]))

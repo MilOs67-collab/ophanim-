@@ -500,6 +500,11 @@ GDELT_MAX_BLOCKS = 2  # after this many fully-backed-off 429s, GDELT is refusing
 
 @source("gdelt")
 def gdelt(ctx, t):
+    if ctx.env.get("GDELT_DOC_API") != "1":
+        # GDELT's search API answers GitHub's shared runner IPs with HTTP 429 before the first request.
+        # The same topic series now comes from the Knowledge Graph files: news/gdelt2/gkg/topics_daily.csv.
+        return t.skip("replaced by gdelt_gkg topics (GDELT's search API refuses GitHub runners); "
+                      "set GDELT_DOC_API=1 to try it anyway")
     span = "3months" if ctx.mode == "backfill" else "3d"
     waits = (30, 90) if ctx.mode == "backfill" else (30,)
     fails, daily, blocked = [], {}, [0]
