@@ -559,11 +559,41 @@ def history_left(bank, today=None, gkg_days=30):
     return len(old(core)), len(old(gkg))
 
 
+def theme_scan(keywords, slots=4):
+    """Print every GKG theme code containing any keyword, with article counts, from the latest hour."""
+    txt = C.fetch_text(BASE + "lastupdate.txt", timeout=60)
+    url = next(p.split()[2] for p in txt.splitlines() if ".gkg." in p)
+    counts, n = {}, 0
+    for i in range(slots + 4):
+        if i:
+            url = _prev_slot_url(url)
+        for u in (url, url.replace(".gkg.", ".translation.gkg.")):
+            try:
+                lines = _lines(C.fetch(u, timeout=180, retries=1))
+            except C.FetchError:
+                continue
+            for line in lines:
+                f = line.split("\t")
+                if len(f) < G_NCOLS - 1:
+                    continue
+                n += 1
+                for th in {x for x in f[G_THEMES].split(";") if x}:
+                    counts[th] = counts.get(th, 0) + 1
+    print(f"{n} articles scanned, {len(counts)} distinct themes")
+    for kw in keywords:
+        hits = sorted(((c, th) for th, c in counts.items() if kw in th), reverse=True)[:12]
+        print(f"[{kw}] " + ", ".join(f"{th}={c}" for c, th in hits))
+
+
 if __name__ == "__main__":
     a = argparse.ArgumentParser()
     a.add_argument("--probe", action="store_true")
     a.add_argument("--history-left", metavar="BANK", help="print days of history still to backfill")
+    a.add_argument("--theme-scan", metavar="KW,KW", help="list GKG theme codes containing these keywords")
     args = a.parse_args()
+    if args.theme_scan:
+        theme_scan([k.strip().upper() for k in args.theme_scan.split(",") if k.strip()])
+        sys.exit(0)
     if args.probe:
         sys.exit(probe())
     if args.history_left:
