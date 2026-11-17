@@ -9,7 +9,7 @@ OPHANIM's permanent memory. Every night it snapshots every feed and compounds it
 | `tables/**.csv` | Living time-series tables. The backfill seeds them, and every night extends them. | ~35 MB one-time, then ~12 MB/yr |
 | `news/YYYY/MM/DD.jsonl.gz` | Every headline and post collected that day (GDELT, Hacker News, Bluesky), deduped | ~30 MB/yr |
 | `manifest.json` | Index of every table: rows, columns, first and last date | rewritten nightly |
-| `health/` | Per-source status for every run (`latest-nightly.json`, `runs.csv`) | tiny |
+| `health/` | Per-source status for every run (`latest-nightly.json`, `runs.csv`), plus how much each source downloaded (`bytes_read`, `bytes_wire`, `requests`) and one line per night in `daily_volume.csv` (MB read, MB over the wire, requests, rows kept) | tiny |
 | GitHub **Releases** `databank-raw-YYYY-MM` | Full untouched nightly payloads: every aircraft, ship, satellite element set and raw API response | ~2 MB/night, stored outside the repo |
 
 The heavy raw geospatial data goes to Releases, so the repo stays small enough to last decades.

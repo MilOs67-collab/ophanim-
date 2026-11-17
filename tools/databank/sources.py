@@ -697,6 +697,7 @@ async def _ais_sample(key, seconds, url=None):
                 msg = await asyncio.wait_for(ws.recv(), timeout=max(1, deadline - time.monotonic()))
             except (asyncio.TimeoutError, websockets.ConnectionClosed):
                 break
+            C.count_stream(len(msg.encode("utf-8") if isinstance(msg, str) else msg))
             m = json.loads(msg)
             md = m.get("MetaData") or {}
             pr = (m.get("Message") or {}).get("PositionReport") or {}
