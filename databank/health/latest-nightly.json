@@ -1,8 +1,8 @@
 {
  "run": "nightly",
- "date": "2026-11-19",
- "started": "2026-11-19T15:44:36Z",
- "finished": "2026-11-19T15:57:10Z",
+ "date": "2026-11-20",
+ "started": "2026-11-20T15:27:47Z",
+ "finished": "2026-11-20T15:42:11Z",
  "ok": 14,
  "failed": 1,
  "skipped": 2,
@@ -10,9 +10,9 @@
   {
    "source": "fred",
    "ok": true,
-   "added": 28,
-   "updated": 17,
-   "seconds": 40.4,
+   "added": 14,
+   "updated": 0,
+   "seconds": 24.4,
    "skipped": false,
    "error": null,
    "notes": []
@@ -22,7 +22,7 @@
    "ok": true,
    "added": 2,
    "updated": 0,
-   "seconds": 36.4,
+   "seconds": 38.1,
    "skipped": false,
    "error": null,
    "notes": []
@@ -40,9 +40,9 @@
   {
    "source": "fx_ecb",
    "ok": true,
-   "added": 1,
+   "added": 0,
    "updated": 0,
-   "seconds": 0.6,
+   "seconds": 0.8,
    "skipped": false,
    "error": null,
    "notes": []
@@ -62,9 +62,9 @@
   {
    "source": "sec_filings",
    "ok": true,
-   "added": 275,
+   "added": 236,
    "updated": 18,
-   "seconds": 7.0,
+   "seconds": 10.6,
    "skipped": false,
    "error": null,
    "notes": []
@@ -86,7 +86,7 @@
    "ok": true,
    "added": 12,
    "updated": 0,
-   "seconds": 3.5,
+   "seconds": 4.3,
    "skipped": false,
    "error": null,
    "notes": []
@@ -104,9 +104,9 @@
   {
    "source": "bitcoin_chain",
    "ok": true,
-   "added": 147,
-   "updated": 17,
-   "seconds": 8.1,
+   "added": 145,
+   "updated": 20,
+   "seconds": 12.8,
    "skipped": false,
    "error": null,
    "notes": []
@@ -116,7 +116,7 @@
    "ok": true,
    "added": 14,
    "updated": 4,
-   "seconds": 16.6,
+   "seconds": 15.7,
    "skipped": false,
    "error": null,
    "notes": []
@@ -126,7 +126,7 @@
    "ok": true,
    "added": 18,
    "updated": 0,
-   "seconds": 1.7,
+   "seconds": 1.1,
    "skipped": false,
    "error": null,
    "notes": [
@@ -137,19 +137,22 @@
   {
    "source": "space",
    "ok": true,
-   "added": 4,
+   "added": 2,
    "updated": 0,
-   "seconds": 53.6,
+   "seconds": 280.2,
    "skipped": false,
    "error": null,
-   "notes": []
+   "notes": [
+    "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle -> HTTP 403",
+    "https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=tle -> HTTP 403"
+   ]
   },
   {
    "source": "air",
    "ok": true,
    "added": 112,
    "updated": 1,
-   "seconds": 1.7,
+   "seconds": 36.7,
    "skipped": false,
    "error": null,
    "notes": []
@@ -167,13 +170,13 @@
   {
    "source": "gdelt_events",
    "ok": true,
-   "added": 231,
+   "added": 227,
    "updated": 0,
-   "seconds": 1.2,
+   "seconds": 0.9,
    "skipped": false,
    "error": null,
    "notes": [
-    "1 files, 128,905 events this run \u00b7 5070/5094 files done \u00b7 0 left \u00b7 24 missing at source"
+    "1 files, 130,634 events this run \u00b7 5071/5095 files done \u00b7 0 left \u00b7 24 missing at source"
    ]
   },
   {
@@ -181,16 +184,16 @@
    "ok": false,
    "added": 0,
    "updated": 0,
-   "seconds": 271.2,
+   "seconds": 126.6,
    "skipped": false,
-   "error": "FetchError: all 24 requests failed \u2014 markets/timelinetone: empty timeline {\"query_details\": {\"title\": \"\\\"stock market\\\" sourcelang:eng\", \"date_resolution\": \"15m\"}, \"timeline\": [{\"series\": \"Avera",
+   "error": "FetchError: all 24 requests failed \u2014 markets/timelinetone: https://api.gdeltproject.org/api/v2/doc/doc?query=%22stock%20market%22%20sourcelang%3Aeng&mode=timelinetone&format=json&timespan=3d -> HTTP 429",
    "notes": [
     "GDELT refused this runner (HTTP 429) \u2014 stopped early so other feeds keep their time",
-    "markets/timelinetone: empty timeline {\"query_details\": {\"title\": \"\\\"stock market\\\" sourcelang:eng\", \"date_resolution\": \"15m\"}, \"timeline\": [{\"series\": \"Avera",
+    "markets/timelinetone: https://api.gdeltproject.org/api/v2/doc/doc?query=%22stock%20market%22%20sourcelang%3Aeng&mode=timelinetone&format=json&timespan=3d -> HTTP 429",
     "markets/timelinevol: https://api.gdeltproject.org/api/v2/doc/doc?query=%22stock%20market%22%20sourcelang%3Aeng&mode=timelinevol&format=json&timespan=3d -> HTTP 429",
-    "banking/timelinetone: empty timeline {}",
-    "banking/timelinevol: empty timeline {}",
-    "crypto/timelinetone: https://api.gdeltproject.org/api/v2/doc/doc?query=cryptocurrency%20sourcelang%3Aeng&mode=timelinetone&format=json&timespan=3d -> HTTP 429",
+    "banking/timelinetone: skipped \u2014 GDELT is throttling this runner",
+    "banking/timelinevol: skipped \u2014 GDELT is throttling this runner",
+    "crypto/timelinetone: skipped \u2014 GDELT is throttling this runner",
     "crypto/timelinevol: skipped \u2014 GDELT is throttling this runner",
     "regulation/timelinetone: skipped \u2014 GDELT is throttling this runner",
     "regulation/timelinevol: skipped \u2014 GDELT is throttling this runner"
