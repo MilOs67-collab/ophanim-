@@ -1,18 +1,18 @@
 {
  "run": "nightly",
- "date": "2026-11-22",
- "started": "2026-11-22T14:34:59Z",
- "finished": "2026-11-22T14:44:14Z",
- "ok": 15,
+ "date": "2026-11-23",
+ "started": "2026-11-23T18:08:31Z",
+ "finished": "2026-11-23T18:17:54Z",
+ "ok": 14,
  "failed": 1,
- "skipped": 1,
+ "skipped": 2,
  "sources": [
   {
    "source": "fred",
    "ok": true,
-   "added": 0,
+   "added": 2,
    "updated": 0,
-   "seconds": 27.5,
+   "seconds": 20.7,
    "skipped": false,
    "error": null,
    "notes": []
@@ -22,7 +22,7 @@
    "ok": true,
    "added": 0,
    "updated": 0,
-   "seconds": 36.9,
+   "seconds": 39.4,
    "skipped": false,
    "error": null,
    "notes": []
@@ -40,9 +40,9 @@
   {
    "source": "fx_ecb",
    "ok": true,
-   "added": 0,
+   "added": 1,
    "updated": 0,
-   "seconds": 0.5,
+   "seconds": 0.8,
    "skipped": false,
    "error": null,
    "notes": []
@@ -52,17 +52,19 @@
    "ok": true,
    "added": 0,
    "updated": 0,
-   "seconds": 11.7,
-   "skipped": false,
+   "seconds": 0.0,
+   "skipped": true,
    "error": null,
-   "notes": []
+   "notes": [
+    "weekly (Sundays) \u2014 skipped"
+   ]
   },
   {
    "source": "sec_filings",
    "ok": true,
-   "added": 0,
+   "added": 158,
    "updated": 18,
-   "seconds": 7.9,
+   "seconds": 8.5,
    "skipped": false,
    "error": null,
    "notes": []
@@ -84,7 +86,7 @@
    "ok": true,
    "added": 12,
    "updated": 0,
-   "seconds": 3.3,
+   "seconds": 4.7,
    "skipped": false,
    "error": null,
    "notes": []
@@ -94,7 +96,7 @@
    "ok": true,
    "added": 101,
    "updated": 0,
-   "seconds": 0.2,
+   "seconds": 0.6,
    "skipped": false,
    "error": null,
    "notes": []
@@ -102,9 +104,9 @@
   {
    "source": "bitcoin_chain",
    "ok": true,
-   "added": 153,
-   "updated": 13,
-   "seconds": 8.2,
+   "added": 166,
+   "updated": 0,
+   "seconds": 6.4,
    "skipped": false,
    "error": null,
    "notes": []
@@ -114,7 +116,7 @@
    "ok": true,
    "added": 0,
    "updated": 4,
-   "seconds": 15.4,
+   "seconds": 16.1,
    "skipped": false,
    "error": null,
    "notes": []
@@ -122,9 +124,9 @@
   {
    "source": "social",
    "ok": true,
-   "added": 13,
+   "added": 14,
    "updated": 0,
-   "seconds": 1.2,
+   "seconds": 1.3,
    "skipped": false,
    "error": null,
    "notes": [
@@ -137,7 +139,7 @@
    "ok": true,
    "added": 4,
    "updated": 0,
-   "seconds": 13.7,
+   "seconds": 35.8,
    "skipped": false,
    "error": null,
    "notes": []
@@ -145,9 +147,9 @@
   {
    "source": "air",
    "ok": true,
-   "added": 113,
+   "added": 107,
    "updated": 1,
-   "seconds": 7.2,
+   "seconds": 2.6,
    "skipped": false,
    "error": null,
    "notes": []
@@ -157,7 +159,7 @@
    "ok": true,
    "added": 10,
    "updated": 0,
-   "seconds": 300.7,
+   "seconds": 300.8,
    "skipped": false,
    "error": null,
    "notes": []
@@ -165,13 +167,13 @@
   {
    "source": "gdelt_events",
    "ok": true,
-   "added": 216,
+   "added": 204,
    "updated": 0,
-   "seconds": 0.5,
+   "seconds": 0.6,
    "skipped": false,
    "error": null,
    "notes": [
-    "1 files, 73,341 events this run \u00b7 5073/5097 files done \u00b7 0 left \u00b7 24 missing at source"
+    "1 files, 59,805 events this run \u00b7 5074/5098 files done \u00b7 0 left \u00b7 24 missing at source"
    ]
   },
   {
@@ -179,7 +181,7 @@
    "ok": false,
    "added": 0,
    "updated": 0,
-   "seconds": 119.4,
+   "seconds": 123.8,
    "skipped": false,
    "error": "FetchError: all 24 requests failed \u2014 markets/timelinetone: https://api.gdeltproject.org/api/v2/doc/doc?query=%22stock%20market%22%20sourcelang%3Aeng&mode=timelinetone&format=json&timespan=3d -> HTTP 429",
    "notes": [
