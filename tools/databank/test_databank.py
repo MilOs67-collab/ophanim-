@@ -606,6 +606,66 @@ class TestShipsLive(Base):
         self.assertTrue(os.path.exists(os.path.join(self.raw, "ais_positions.csv.gz")))
 
 
+class TestDownloadMeter(Base):
+    """Every source reports exactly how much it read; the night's total lands in health/."""
+
+    def test_each_source_reports_its_own_bytes(self):
+        seen, fake = [], Fake(TODAY)
+
+        def meter(url, **kw):
+            body = fake(url, **kw)
+            seen.append(len(body or b""))
+            return body
+
+        rep = self.go("nightly", fake=meter)
+        by = {r["source"]: r for r in rep["sources"]}
+        self.assertEqual(rep["bytes_read"], sum(seen))
+        self.assertEqual(rep["requests"], len(seen))
+        self.assertGreater(by["fred"]["bytes_read"], 0)
+        self.assertGreater(by["fred"]["requests"], 0)
+        # A skipped source reads nothing and is not charged for its neighbours' traffic.
+        self.assertEqual(by["worldbank"]["bytes_read"], 0)
+        self.assertEqual(by["worldbank"]["requests"], 0)
+
+    def test_failed_source_reads_zero(self):
+        rep = self.go("nightly", fake=Fake(broken=("mempool.space",)))
+        by = {r["source"]: r for r in rep["sources"]}
+        self.assertFalse(by["bitcoin_chain"]["ok"])
+        self.assertEqual(by["bitcoin_chain"]["bytes_read"], 0)
+
+    def test_runs_csv_and_daily_volume_written(self):
+        rep = self.go("nightly")
+        with open(os.path.join(self.bank, "health", "runs.csv")) as f:
+            runs = list(csv.DictReader(f))
+        self.assertIn("bytes_read", runs[0])
+        self.assertEqual(sum(int(r["bytes_read"]) for r in runs), rep["bytes_read"])
+        with open(os.path.join(self.bank, "health", "daily_volume.csv")) as f:
+            vol = list(csv.DictReader(f))
+        self.assertEqual(len(vol), 1)
+        self.assertEqual(vol[0]["date"], TODAY.isoformat())
+        self.assertAlmostEqual(float(vol[0]["mb_read"]), round(rep["bytes_read"] / 1e6, 2))
+        self.assertEqual(int(vol[0]["requests"]), rep["requests"])
+
+    def test_old_runs_rows_survive_new_columns(self):
+        hdir = os.path.join(self.bank, "health")
+        os.makedirs(hdir)
+        with open(os.path.join(hdir, "runs.csv"), "w") as f:
+            f.write("date,run,source,ok,added,updated,seconds,error\n"
+                    "2026-10-01,nightly,fred,1,4,16,21.4,\n")
+        self.go("nightly")
+        with open(os.path.join(hdir, "runs.csv")) as f:
+            runs = list(csv.DictReader(f))
+        old = [r for r in runs if r["date"] == "2026-10-01"]
+        self.assertEqual(len(old), 1)
+        self.assertEqual((old[0]["added"], old[0]["seconds"], old[0]["bytes_read"]), ("4", "21.4", ""))
+
+    def test_websocket_messages_counted(self):
+        C.net_reset()
+        C.count_stream(512)
+        C.count_stream(488)
+        self.assertEqual(C.NET, {"data": 1000, "wire": 1000, "calls": 2})
+
+
 class TestWorkflows(unittest.TestCase):
     def test_workflows_are_valid_yaml_with_required_pieces(self):
         try:
