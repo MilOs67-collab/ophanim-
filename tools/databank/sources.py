@@ -500,6 +500,11 @@ GDELT_MAX_BLOCKS = 2  # after this many fully-backed-off 429s, GDELT is refusing
 
 @source("gdelt")
 def gdelt(ctx, t):
+    if ctx.env.get("GDELT_DOC_API") != "1":
+        # GDELT's search API answers GitHub's shared runner IPs with HTTP 429 before the first request.
+        # The same topic series now comes from the Knowledge Graph files: news/gdelt2/gkg/topics_daily.csv.
+        return t.skip("replaced by gdelt_gkg topics (GDELT's search API refuses GitHub runners); "
+                      "set GDELT_DOC_API=1 to try it anyway")
     span = "3months" if ctx.mode == "backfill" else "3d"
     waits = (30, 90) if ctx.mode == "backfill" else (30,)
     fails, daily, blocked = [], {}, [0]
@@ -697,6 +702,7 @@ async def _ais_sample(key, seconds, url=None):
                 msg = await asyncio.wait_for(ws.recv(), timeout=max(1, deadline - time.monotonic()))
             except (asyncio.TimeoutError, websockets.ConnectionClosed):
                 break
+            C.count_stream(len(msg.encode("utf-8") if isinstance(msg, str) else msg))
             m = json.loads(msg)
             md = m.get("MetaData") or {}
             pr = (m.get("Message") or {}).get("PositionReport") or {}

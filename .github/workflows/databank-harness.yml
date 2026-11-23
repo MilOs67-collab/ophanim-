@@ -21,3 +21,15 @@ jobs:
           python-version: "3.12"
       - run: pip install pyyaml
       - run: python -m unittest tools.databank.test_databank -v
+
+  # Real-world check: pull GDELT 2.0's newest Events, Mentions and Knowledge Graph files and prove
+  # the parsers read them (column layout, value ranges, joins). Catches format drift the fixtures can't.
+  gdelt-live-probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m tools.databank.gdelt_v2 --probe

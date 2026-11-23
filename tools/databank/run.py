@@ -12,6 +12,7 @@ import time
 from . import common as C
 from . import sources as S
 from . import gdelt_events  # noqa: F401  (registers the GDELT raw-file source)
+from . import gdelt_v2  # noqa: F401  (registers GDELT 2.0 events+mentions and the knowledge graph)
 
 
 def run(mode, bank, raw=None, only=None, today=None, env=None):
@@ -26,16 +27,19 @@ def run(mode, bank, raw=None, only=None, today=None, env=None):
         t = S.Tally()
         t0 = time.monotonic()
         err = None
+        C.net_reset()
         try:
             fn(ctx, t)
         except Exception as e:  # isolate every source
             err = f"{type(e).__name__}: {e}"
         res = {"source": name, "ok": err is None, "added": t.added, "updated": t.updated,
                "seconds": round(time.monotonic() - t0, 1), "skipped": t.skipped and err is None,
-               "error": err, "notes": t.notes}
+               "error": err, "notes": t.notes,
+               "bytes_read": C.NET["data"], "bytes_wire": C.NET["wire"], "requests": C.NET["calls"]}
         ctx.results.append(res)
         flag = "FAIL" if err else ("SKIP" if t.skipped else "OK  ")
         print(f"[{flag}] {name:18s} +{t.added:<7d} ~{t.updated:<6d} {res['seconds']:>6}s"
+              f" {res['bytes_read'] / 1e6:>8.2f}MB"
               f"{'  ' + err if err else ''}{'  (' + '; '.join(t.notes[:3]) + ')' if t.notes else ''}",
               flush=True)
     rep = C.write_health(bank, ctx, started)
@@ -43,6 +47,9 @@ def run(mode, bank, raw=None, only=None, today=None, env=None):
     print(f"\nDATA BANK: {m['table_count']} tables · {m['total_rows']:,} rows · "
           f"{m['total_bytes'] / 1e6:.1f} MB · {m['news_days']} news days · "
           f"{rep['ok']} ok / {rep['failed']} failed", flush=True)
+    print(f"READ TONIGHT: {rep['bytes_read'] / 1e6:.1f} MB "
+          f"({rep['bytes_wire'] / 1e6:.1f} MB over the wire) in {rep['requests']:,} requests/messages",
+          flush=True)
     return rep
 
 

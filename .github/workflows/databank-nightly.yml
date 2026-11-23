@@ -16,7 +16,7 @@ concurrency:
 jobs:
   collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 120  # GDELT 2.0 + Knowledge Graph add ~1-2 GB of downloads a night
     steps:
       - uses: actions/checkout@v4
 

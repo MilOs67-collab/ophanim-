@@ -26,6 +26,7 @@ def _http_get(url, headers=None, timeout=60, retries=3, backoff=2.0, data=None):
             req = urllib.request.Request(url, headers=h, data=data)
             with urllib.request.urlopen(req, timeout=timeout) as r:
                 body = r.read()
+                NET["wire"] += len(body)  # what actually crossed the network (still compressed)
                 if r.headers.get("Content-Encoding") == "gzip":
                     body = gzip.decompress(body)
                 return body
@@ -46,9 +47,30 @@ def _http_get(url, headers=None, timeout=60, retries=3, backoff=2.0, data=None):
 fetch_impl = _http_get
 sleep_impl = time.sleep
 
+# Download meter. The runner zeroes it before each source and reads it after.
+#   data  = bytes of payload the source read (after gzip is undone) — "how much it read through"
+#   wire  = bytes that crossed the network (smaller when the server gzips)
+#   calls = successful requests / socket messages
+NET = {"data": 0, "wire": 0, "calls": 0}
+
+
+def net_reset():
+    for k in NET:
+        NET[k] = 0
+
+
+def count_stream(nbytes):
+    """For non-HTTP pipes (websockets): one message of `nbytes`, uncompressed."""
+    NET["data"] += nbytes
+    NET["wire"] += nbytes
+    NET["calls"] += 1
+
 
 def fetch(url, **kw):
-    return fetch_impl(url, **kw)
+    body = fetch_impl(url, **kw)
+    NET["data"] += len(body or b"")
+    NET["calls"] += 1
+    return body
 
 
 def fetch_json(url, **kw):
@@ -283,18 +305,33 @@ def _cmp(a, b):
 def write_health(bank_dir, ctx, started):
     hdir = os.path.join(bank_dir, "health")
     os.makedirs(hdir, exist_ok=True)
+    tot = lambda k: sum(r.get(k) or 0 for r in ctx.results)
     rep = {
         "run": ctx.mode, "date": ctx.today.isoformat(), "started": started,
         "finished": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "ok": sum(1 for r in ctx.results if r["ok"] and not r.get("skipped")),
         "failed": sum(1 for r in ctx.results if not r["ok"]),
         "skipped": sum(1 for r in ctx.results if r.get("skipped")),
+        "bytes_read": tot("bytes_read"),
+        "bytes_wire": tot("bytes_wire"),
+        "requests": tot("requests"),
         "sources": ctx.results,
     }
     with open(os.path.join(hdir, f"latest-{ctx.mode}.json"), "w", encoding="utf-8") as f:
         json.dump(rep, f, indent=1)
+    # New columns go on the end so older rows (logged before the meter existed) stay intact.
     rows = [{"date": ctx.today.isoformat(), "run": ctx.mode, "source": r["source"],
              "ok": r["ok"], "added": r["added"], "updated": r["updated"],
-             "seconds": r["seconds"], "error": (r["error"] or "")[:200]} for r in ctx.results]
-    upsert_csv(os.path.join(hdir, "runs.csv"), rows, key=("date", "run", "source"))
+             "seconds": r["seconds"], "error": (r["error"] or "")[:200],
+             "bytes_read": r.get("bytes_read", 0), "bytes_wire": r.get("bytes_wire", 0),
+             "requests": r.get("requests", 0)} for r in ctx.results]
+    upsert_csv(os.path.join(hdir, "runs.csv"), rows, key=("date", "run", "source"),
+               columns=["ok", "added", "updated", "seconds", "error",
+                        "bytes_read", "bytes_wire", "requests"])
+    # One line per run: the daily number at a glance.
+    upsert_csv(os.path.join(hdir, "daily_volume.csv"), [{
+        "date": ctx.today.isoformat(), "run": ctx.mode,
+        "mb_read": round(rep["bytes_read"] / 1e6, 2), "mb_wire": round(rep["bytes_wire"] / 1e6, 2),
+        "requests": rep["requests"], "rows_added": tot("added"),
+        "sources_ok": rep["ok"], "sources_failed": rep["failed"]}], key=("date", "run"))
     return rep
