@@ -1,18 +1,18 @@
 {
  "run": "nightly",
- "date": "2026-11-24",
- "started": "2026-11-24T17:44:33Z",
- "finished": "2026-11-24T17:55:50Z",
- "ok": 15,
- "failed": 0,
+ "date": "2026-11-25",
+ "started": "2026-11-25T17:14:10Z",
+ "finished": "2026-11-25T17:25:22Z",
+ "ok": 13,
+ "failed": 2,
  "skipped": 2,
  "sources": [
   {
    "source": "fred",
    "ok": true,
-   "added": 17,
-   "updated": 4,
-   "seconds": 29.5,
+   "added": 22,
+   "updated": 24,
+   "seconds": 23.5,
    "skipped": false,
    "error": null,
    "notes": []
@@ -22,7 +22,7 @@
    "ok": true,
    "added": 2,
    "updated": 0,
-   "seconds": 36.4,
+   "seconds": 36.8,
    "skipped": false,
    "error": null,
    "notes": []
@@ -42,7 +42,7 @@
    "ok": true,
    "added": 1,
    "updated": 0,
-   "seconds": 0.5,
+   "seconds": 0.9,
    "skipped": false,
    "error": null,
    "notes": []
@@ -62,9 +62,9 @@
   {
    "source": "sec_filings",
    "ok": true,
-   "added": 315,
+   "added": 355,
    "updated": 18,
-   "seconds": 7.6,
+   "seconds": 9.4,
    "skipped": false,
    "error": null,
    "notes": []
@@ -85,8 +85,8 @@
    "source": "crypto_coinbase",
    "ok": true,
    "added": 12,
-   "updated": 0,
-   "seconds": 3.2,
+   "updated": 35,
+   "seconds": 5.0,
    "skipped": false,
    "error": null,
    "notes": []
@@ -96,7 +96,7 @@
    "ok": true,
    "added": 101,
    "updated": 0,
-   "seconds": 0.2,
+   "seconds": 0.3,
    "skipped": false,
    "error": null,
    "notes": []
@@ -104,9 +104,9 @@
   {
    "source": "bitcoin_chain",
    "ok": true,
-   "added": 152,
-   "updated": 14,
-   "seconds": 8.7,
+   "added": 147,
+   "updated": 18,
+   "seconds": 6.5,
    "skipped": false,
    "error": null,
    "notes": []
@@ -114,9 +114,9 @@
   {
    "source": "markets",
    "ok": true,
-   "added": 13,
+   "added": 14,
    "updated": 4,
-   "seconds": 16.4,
+   "seconds": 17.1,
    "skipped": false,
    "error": null,
    "notes": []
@@ -124,9 +124,9 @@
   {
    "source": "social",
    "ok": true,
-   "added": 14,
+   "added": 22,
    "updated": 0,
-   "seconds": 1.1,
+   "seconds": 1.4,
    "skipped": false,
    "error": null,
    "notes": [
@@ -136,20 +136,25 @@
   },
   {
    "source": "space",
-   "ok": true,
-   "added": 4,
+   "ok": false,
+   "added": 1,
    "updated": 0,
-   "seconds": 72.2,
+   "seconds": 132.1,
    "skipped": false,
-   "error": null,
-   "notes": []
+   "error": "FetchError: all 4 requests failed \u2014 https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle -> HTTP 503",
+   "notes": [
+    "https://celestrak.org/NORAD/elements/gp.php?GROUP=active&FORMAT=tle -> HTTP 503",
+    "https://celestrak.org/NORAD/elements/gp.php?GROUP=stations&FORMAT=tle -> HTTP 503",
+    "https://celestrak.org/NORAD/elements/gp.php?GROUP=gps-ops&FORMAT=tle -> HTTP 503",
+    "https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=tle -> HTTP 503"
+   ]
   },
   {
    "source": "air",
    "ok": true,
-   "added": 105,
+   "added": 106,
    "updated": 1,
-   "seconds": 1.7,
+   "seconds": 2.3,
    "skipped": false,
    "error": null,
    "notes": []
@@ -167,33 +172,33 @@
   {
    "source": "gdelt_events",
    "ok": true,
-   "added": 220,
+   "added": 226,
    "updated": 0,
-   "seconds": 0.9,
+   "seconds": 1.0,
    "skipped": false,
    "error": null,
    "notes": [
-    "1 files, 101,301 events this run \u00b7 5075/5099 files done \u00b7 0 left \u00b7 24 missing at source"
+    "1 files, 112,458 events this run \u00b7 5076/5100 files done \u00b7 0 left \u00b7 24 missing at source"
    ]
   },
   {
    "source": "gdelt",
-   "ok": true,
-   "added": 3,
+   "ok": false,
+   "added": 0,
    "updated": 0,
-   "seconds": 186.3,
+   "seconds": 123.4,
    "skipped": false,
-   "error": null,
+   "error": "FetchError: all 24 requests failed \u2014 markets/timelinetone: https://api.gdeltproject.org/api/v2/doc/doc?query=%22stock%20market%22%20sourcelang%3Aeng&mode=timelinetone&format=json&timespan=3d -> HTTP 429",
    "notes": [
     "GDELT refused this runner (HTTP 429) \u2014 stopped early so other feeds keep their time",
     "markets/timelinetone: https://api.gdeltproject.org/api/v2/doc/doc?query=%22stock%20market%22%20sourcelang%3Aeng&mode=timelinetone&format=json&timespan=3d -> HTTP 429",
-    "banking/timelinetone: https://api.gdeltproject.org/api/v2/doc/doc?query=%22central%20bank%22%20sourcelang%3Aeng&mode=timelinetone&format=json&timespan=3d -> HTTP 429",
+    "markets/timelinevol: https://api.gdeltproject.org/api/v2/doc/doc?query=%22stock%20market%22%20sourcelang%3Aeng&mode=timelinevol&format=json&timespan=3d -> HTTP 429",
+    "banking/timelinetone: skipped \u2014 GDELT is throttling this runner",
     "banking/timelinevol: skipped \u2014 GDELT is throttling this runner",
     "crypto/timelinetone: skipped \u2014 GDELT is throttling this runner",
     "crypto/timelinevol: skipped \u2014 GDELT is throttling this runner",
     "regulation/timelinetone: skipped \u2014 GDELT is throttling this runner",
-    "regulation/timelinevol: skipped \u2014 GDELT is throttling this runner",
-    "energy/timelinetone: skipped \u2014 GDELT is throttling this runner"
+    "regulation/timelinevol: skipped \u2014 GDELT is throttling this runner"
    ]
   }
  ]
